@@ -1,32 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
+import {
+  categoryOf,
+  PHOTO_CATEGORIES,
+  type PhotoCategory,
+  type PhotoCategoryMap,
+} from "@/lib/photo-categories";
 import { cn } from "@/lib/utils";
 
 /**
  * BeForward-style gallery for the car detail page:
  * big photo + arrows + "3 / 6" counter + category tabs + thumbnail strip + fullscreen view.
  *
- * Why categories come from the file path: the catalog stores `images` as a plain string[],
- * so there is no database change. Known gallery files (interior.jpg, wheel.jpg ...) are
- * sorted automatically; anything else (e.g. admin uploads) lands under "Exterior".
+ * Tabs come from the category the dealer picked for each photo in the admin. Photos with no
+ * choice (the demo photos) are sorted by file name (interior.jpg, wheel.jpg ...), anything else is "Exterior".
  */
 
-type Category = "Exterior" | "Interior" | "Engine" | "Wheels";
+type Props = { images: string[]; alt: string; categories?: PhotoCategoryMap };
 
-const CATEGORY_ORDER: Category[] = ["Exterior", "Interior", "Engine", "Wheels"];
-
-function categoryOf(src: string): Category {
-  const file = src.toLowerCase();
-  if (file.includes("interior") || file.includes("seats")) return "Interior";
-  if (file.includes("engine")) return "Engine";
-  if (file.includes("wheel")) return "Wheels";
-  return "Exterior";
-}
-
-type Props = { images: string[]; alt: string };
-
-export function VehicleGallery({ images, alt }: Props) {
-  const [filter, setFilter] = useState<Category | "All">("All");
+export function VehicleGallery({ images, alt, categories }: Props) {
+  const [filter, setFilter] = useState<PhotoCategory | "All">("All");
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
   const touchX = useRef<number | null>(null);
@@ -34,13 +27,16 @@ export function VehicleGallery({ images, alt }: Props) {
 
   // Only show tabs that actually have photos, so a 3-photo car doesn't get empty tabs.
   const tabs = useMemo(() => {
-    const present = CATEGORY_ORDER.filter((c) => images.some((src) => categoryOf(src) === c));
+    const present = PHOTO_CATEGORIES.filter((c) =>
+      images.some((src) => categoryOf(src, categories) === c),
+    );
     return present.length > 1 ? (["All", ...present] as const) : ([] as const);
-  }, [images]);
+  }, [images, categories]);
 
   const visible = useMemo(
-    () => (filter === "All" ? images : images.filter((src) => categoryOf(src) === filter)),
-    [images, filter],
+    () =>
+      filter === "All" ? images : images.filter((src) => categoryOf(src, categories) === filter),
+    [images, filter, categories],
   );
 
   // Reset when the car changes (same component instance is reused between slugs).
@@ -109,7 +105,9 @@ export function VehicleGallery({ images, alt }: Props) {
         <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Photo categories">
           {tabs.map((tab) => {
             const total =
-              tab === "All" ? images.length : images.filter((s) => categoryOf(s) === tab).length;
+              tab === "All"
+                ? images.length
+                : images.filter((s) => categoryOf(s, categories) === tab).length;
             return (
               <button
                 key={tab}

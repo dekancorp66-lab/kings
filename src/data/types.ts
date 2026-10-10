@@ -1,3 +1,5 @@
+import type { PhotoCategoryMap } from "@/lib/photo-categories";
+
 export type VehicleStatus = "available" | "pending" | "sold";
 
 export type Spec = { label: string; value: string };
@@ -24,6 +26,8 @@ export type Vehicle = {
   featured: boolean;
   description: string;
   images: string[];
+  /** Optional: which tab each photo belongs to (set in the admin). Untagged photos are guessed from the file name. */
+  imageCategories?: PhotoCategoryMap;
   specs: Spec[];
   technical: Spec[];
 };

@@ -3,7 +3,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import type { Vehicle } from "@/data/types";
+import { PhotoTile } from "@/components/curator/photo-tile";
 import { createVehicle, uploadVehiclePhoto } from "@/lib/api";
+import type { PhotoCategoryMap } from "@/lib/photo-categories";
 import { firstIssue, vehicleInputSchema } from "@/lib/vehicle-input";
 import { uniqueSorted } from "@/lib/vehicles";
 
@@ -15,6 +17,8 @@ type Props = {
 
 export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
   const [images, setImages] = useState<string[]>([]);
+  // What each photo shows (Exterior / Interior / Engine / Wheels). Missing = Exterior.
+  const [categories, setCategories] = useState<PhotoCategoryMap>({});
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -69,6 +73,7 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
       zeroToSixty: str("zeroToSixty"),
       topSpeed: str("topSpeed"),
       images,
+      imageCategories: categories,
     });
     if (!parsed.success) {
       toast.error(firstIssue(parsed.error));
@@ -103,31 +108,21 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
 
       <fieldset className="mt-6">
         <legend className="text-micro font-semibold tracking-mark text-muted uppercase">Photos</legend>
-        <p className="mt-1 text-xs text-muted">JPG, PNG or WebP, up to 8 MB each. The first photo is the main one.</p>
+        <p className="mt-1 text-xs text-muted">JPG, PNG or WebP. Big phone photos are shrunk automatically. The first photo is the main one. Pick what each photo shows (Exterior, Interior, Engine, Wheels) and it appears under that tab on the car page.</p>
         <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {images.map((src, index) => (
-            <div key={src} className="relative overflow-hidden rounded-lg ring-1 ring-line">
-              <img src={src} alt="" className="aspect-4/3 w-full object-cover" />
-              {index === 0 ? (
-                <span className="absolute top-1 left-1 rounded bg-navy px-1.5 py-0.5 text-[0.6rem] text-inverse">Main</span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setImages((prev) => [src, ...prev.filter((x) => x !== src)])}
-                  className="absolute top-1 left-1 rounded bg-surface/90 px-1.5 py-0.5 text-[0.6rem] text-ink hover:bg-surface"
-                >
-                  Make main
-                </button>
-              )}
-              <button
-                type="button"
-                aria-label="Remove photo"
-                onClick={() => setImages((prev) => prev.filter((x) => x !== src))}
-                className="absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-surface/90 text-xs text-ink hover:bg-surface"
-              >
-                ✕
-              </button>
-            </div>
+            <PhotoTile
+              key={src}
+              src={src}
+              isMain={index === 0}
+              category={categories[src] ?? "Exterior"}
+              onCategory={(category) => setCategories((prev) => ({ ...prev, [src]: category }))}
+              onMakeMain={() => setImages((prev) => [src, ...prev.filter((x) => x !== src)])}
+              onRemove={() => {
+                setImages((prev) => prev.filter((x) => x !== src));
+                setCategories(({ [src]: _removed, ...rest }) => rest);
+              }}
+            />
           ))}
           <button
             type="button"

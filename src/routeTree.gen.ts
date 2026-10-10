@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ApiAppointmentsRouteImport } from './routes/api/appointments'
 import { Route as ApiInquiriesRouteImport } from './routes/api/inquiries'
 import { Route as ApiLoginRouteImport } from './routes/api/login'
@@ -47,6 +49,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -60,6 +67,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAppointmentsRoute = ApiAppointmentsRouteImport.update({
@@ -147,9 +159,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/inquiries': typeof ApiInquiriesRouteWithChildren
   '/api/login': typeof ApiLoginRoute
@@ -171,9 +185,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/inquiries': typeof ApiInquiriesRouteWithChildren
   '/api/login': typeof ApiLoginRoute
@@ -196,9 +212,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/appointments': typeof ApiAppointmentsRouteWithChildren
   '/api/inquiries': typeof ApiInquiriesRouteWithChildren
   '/api/login': typeof ApiLoginRoute
@@ -222,9 +240,11 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/robots.txt'
     | '/services'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/appointments'
     | '/api/inquiries'
     | '/api/login'
@@ -246,9 +266,11 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/robots.txt'
     | '/services'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/appointments'
     | '/api/inquiries'
     | '/api/login'
@@ -270,9 +292,11 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/privacy'
     | '/robots.txt'
     | '/services'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/appointments'
     | '/api/inquiries'
     | '/api/login'
@@ -295,9 +319,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   ServicesRoute: typeof ServicesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   ApiAppointmentsRoute: typeof ApiAppointmentsRouteWithChildren
   ApiInquiriesRoute: typeof ApiInquiriesRouteWithChildren
   ApiLoginRoute: typeof ApiLoginRoute
@@ -335,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -354,6 +387,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/appointments': {
@@ -523,9 +563,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   ServicesRoute: ServicesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   ApiAppointmentsRoute: ApiAppointmentsRouteWithChildren,
   ApiInquiriesRoute: ApiInquiriesRouteWithChildren,
   ApiLoginRoute: ApiLoginRoute,

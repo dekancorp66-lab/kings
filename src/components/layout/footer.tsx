@@ -101,14 +101,14 @@ export function Footer() {
             © {new Date().getFullYear()} {business.name}. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link to="/contact" className="hover:text-inverse">
+            <Link to="/privacy" className="hover:text-inverse">
               Privacy
             </Link>
-            <Link to="/contact" className="hover:text-inverse">
-              Terms of service
+            <Link to="/terms" className="hover:text-inverse">
+              Terms of use
             </Link>
             <Link to="/curator/login" className="hover:text-inverse">
-              Curator
+              Staff login
             </Link>
           </div>
         </div>

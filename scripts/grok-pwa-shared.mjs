@@ -6,7 +6,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-export const DEFAULT_APP_NAME = "Grok App";
+// Name shown when a visitor installs the site on their phone (PWA) and the fallback share title.
+export const DEFAULT_APP_NAME = "King $eller$";
 export const OG_SERVICE_URL_DEFAULT = "https://og.grok.me";
 export const OG_SITE_REL_PATH = "src/lib/og/site.json";
 
@@ -167,14 +168,12 @@ export function renderWebManifest(hostHeader) {
       start_url: "/",
       scope: "/",
       display: "standalone",
-      background_color: "#000000",
-      theme_color: "#000000",
+      background_color: "#0B1727",
+      theme_color: "#0B1727",
       icons: [
-        {
-          src: "/__grok/icon-180.png",
-          sizes: "180x180",
-          type: "image/png",
-        },
+        { src: "/__grok/icon-180.png", sizes: "180x180", type: "image/png" },
+        { src: "/__grok/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: "/__grok/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
       ],
     },
     null,
@@ -209,7 +208,7 @@ export function readGrokProjectId() {
 
 export function readGrokExtensionsEnabled() {
   const fromProcess = typeof process !== "undefined" ? process.env?.VITE_GROK_EXTENSIONS : "";
-  return String(fromProcess ?? "").trim() !== "0";
+  return String(fromProcess ?? "").trim() === "1";
 }
 
 export function readXCreator() {
@@ -445,7 +444,11 @@ export function injectGrokPwaHead(html, ctx = {}) {
     host,
     documentTitle,
   );
-  let next = stripShareMetaTags(html);
+  // Why: every route of this site writes its OWN og:/twitter: tags (the car page carries that car's
+  // photo, name and price for WhatsApp). The old code deleted them all and put one generic card on
+  // every page. Now the generic card is only a fallback for pages that declare no og:title.
+  const hasOwnShareTags = /<meta\b[^>]*\b(?:property|name)\s*=\s*["']og:title["']/i.test(html);
+  let next = hasOwnShareTags ? html : stripShareMetaTags(html);
   if (!readGrokExtensionsEnabled()) next = stripGrokExtensionsScript(next);
 
   const missing = grokPwaHeadTags(appName)
@@ -456,10 +459,12 @@ export function injectGrokPwaHead(html, ctx = {}) {
     })
     .map(([, tag]) => tag);
 
-  next = insertAfterHeadOpen(
-    next,
-    grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
-  );
+  if (!hasOwnShareTags) {
+    next = insertAfterHeadOpen(
+      next,
+      grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
+    );
+  }
 
   if (readGrokExtensionsEnabled() && !next.includes("/grok-app-builder/extensions.js")) {
     missing.push(...grokExtensionsHeadTags(projectId));

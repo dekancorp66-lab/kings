@@ -30,7 +30,11 @@ export const Route = createFileRoute("/")({
 const ICONS = [ShieldCheck, Scale, Sparkles, Headphones];
 
 function Home() {
-  const featured = useVehicles().filter((item) => item.featured);
+  const allVehicles = useVehicles();
+  const available = allVehicles.filter((item) => item.status !== "sold");
+  const featuredPicks = available.filter((item) => item.featured);
+  // If no car is ticked "Featured", show the 3 newest so the home page is never empty while stock exists.
+  const featured = featuredPicks.length ? featuredPicks : available.slice(0, 3);
 
   return (
     <SiteShell>
@@ -60,24 +64,29 @@ function Home() {
 
       <SearchPanel />
 
-      <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-micro font-semibold tracking-mark text-accent uppercase">
-              Featured arrivals
-            </p>
-            <h2 className="mt-1 font-serif text-3xl text-ink md:text-4xl">Featured Vehicles</h2>
+      {featured.length ? (
+        <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-micro font-semibold tracking-mark text-accent uppercase">
+                Featured arrivals
+              </p>
+              <h2 className="mt-1 font-serif text-3xl text-ink md:text-4xl">Featured Vehicles</h2>
+            </div>
+            <Link
+              to="/inventory"
+              className="text-sm font-medium text-accent hover:text-accent-hover"
+            >
+              Browse entire catalogue
+            </Link>
           </div>
-          <Link to="/inventory" className="text-sm font-medium text-accent hover:text-accent-hover">
-            Browse entire catalogue
-          </Link>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {featured.map((vehicle) => (
-            <VehicleCard key={vehicle.id} vehicle={vehicle} />
-          ))}
-        </div>
-      </section>
+          <div className="grid gap-6 md:grid-cols-3">
+            {featured.map((vehicle) => (
+              <VehicleCard key={vehicle.id} vehicle={vehicle} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="bg-surface py-20">
         <div className="mx-auto max-w-6xl px-5 lg:px-8">

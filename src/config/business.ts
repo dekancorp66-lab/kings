@@ -22,6 +22,7 @@ export const business = {
   phones: [
     { display: "0770 492 593", intl: "255770492593" },
     { display: "0743 482 593", intl: "255743482593" },
+    { display: "0781 392 051", intl: "255781392051" },
   ] satisfies Phone[],
   email: "kingsellerstz@gmail.com",
   address: ["Dar es Salaam", "Tanzania"],

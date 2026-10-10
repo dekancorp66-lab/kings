@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getSiteOrigin } from "@/lib/site";
 import { listVehicles } from "@/lib/vehicle-store.server";
 
-const STATIC_PAGES = ["/", "/inventory", "/about", "/services", "/contact"];
+const STATIC_PAGES = ["/", "/inventory", "/about", "/services", "/contact", "/privacy", "/terms"];
 
 /** Keeps stray characters in a slug from breaking the XML. */
 const esc = (text: string) =>

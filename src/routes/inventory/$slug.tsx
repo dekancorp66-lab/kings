@@ -60,6 +60,7 @@ function VehicleDetail() {
         <div className="min-w-0">
           <VehicleGallery
             images={vehicle.images}
+            categories={vehicle.imageCategories}
             alt={`${vehicle.year} ${vehicle.name} ${vehicle.trim}`}
           />
         </div>

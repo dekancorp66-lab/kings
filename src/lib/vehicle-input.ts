@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Spec, Vehicle } from "@/data/types";
+import { PHOTO_CATEGORIES } from "@/lib/photo-categories";
 
 /**
  * Shared by the admin form (client) AND the API route (server).
@@ -27,8 +28,15 @@ export const vehicleInputSchema = z.object({
     .int("Year must be a whole number")
     .min(1950, "Year must be 1950 or later")
     .max(new Date().getFullYear() + 1, "Year is in the future"),
-  price: z.coerce.number({ error: "Price must be a number" }).positive("Price must be above 0").max(100_000_000),
-  mileage: z.coerce.number({ error: "Mileage must be a number" }).int().min(0, "Mileage cannot be negative").max(2_000_000),
+  price: z.coerce
+    .number({ error: "Price must be a number" })
+    .positive("Price must be above 0")
+    .max(100_000_000_000),
+  mileage: z.coerce
+    .number({ error: "Mileage must be a number" })
+    .int()
+    .min(0, "Mileage cannot be negative")
+    .max(2_000_000),
   body: text("Body type", 40),
   fuel: text("Fuel", 40),
   transmission: text("Transmission", 60),
@@ -55,6 +63,10 @@ export const vehicleInputSchema = z.object({
     .array(z.string().regex(IMAGE_URL, "Invalid image path"))
     .min(1, "Add at least one photo")
     .max(12, "Maximum 12 photos"),
+  // What each photo shows (Exterior / Interior / Engine / Wheels). Optional, so old clients still work.
+  imageCategories: z
+    .record(z.string().regex(IMAGE_URL, "Invalid image path"), z.enum(PHOTO_CATEGORIES))
+    .optional(),
 });
 
 export type VehicleInput = z.input<typeof vehicleInputSchema>;
@@ -82,6 +94,13 @@ const fmt = (n: number) => new Intl.NumberFormat("en-US").format(n);
  * Why derive `specs`/`technical` here: the admin types each fact once; the detail page
  * grids are generated, so they can never contradict the main fields.
  */
+function taggedPhotos(input: VehicleParsed) {
+  const entries = Object.entries(input.imageCategories ?? {}).filter(([src]) =>
+    input.images.includes(src),
+  );
+  return entries.length ? Object.fromEntries(entries) : undefined;
+}
+
 export function buildVehicle(input: VehicleParsed, id: string, slug: string): Vehicle {
   const specs: Spec[] = [
     { label: "Year", value: String(input.year) },
@@ -123,6 +142,8 @@ export function buildVehicle(input: VehicleParsed, id: string, slug: string): Ve
     featured: input.featured,
     description: input.description,
     images: input.images,
+    // Keep only tags for photos that are really on the car (a removed photo's tag is dropped).
+    ...(taggedPhotos(input) ? { imageCategories: taggedPhotos(input) } : {}),
     specs,
     technical,
   };

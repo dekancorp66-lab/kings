@@ -19,6 +19,10 @@ import {
 } from "./grok-pwa-shared.mjs";
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
+// This site ships with the "Created with Grok" banner OFF (see readGrokExtensionsEnabled).
+// The tests below exercise the banner mechanism, so switch it on for this file only.
+process.env.VITE_GROK_EXTENSIONS ??= "1";
+
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 test("injects before </head>", () => {
@@ -484,14 +488,14 @@ test("strips install params from the app link", () => {
 });
 
 test("names the install page from host slug", () => {
-  assert.equal(appNameFromHost("localhost:8080"), "Grok App");
-  assert.equal(appNameFromHost("172.17.154.217:8080"), "Grok App");
+  assert.equal(appNameFromHost("localhost:8080"), "King $eller$");
+  assert.equal(appNameFromHost("172.17.154.217:8080"), "King $eller$");
   assert.equal(appNameFromHost("wild-race.grok.me"), "Wild Race");
 });
 
 test("rejects hosts that are not plain slugs", () => {
-  assert.equal(appNameFromHost("<script>alert(1)</script>"), "Grok App");
-  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "Grok App");
+  assert.equal(appNameFromHost("<script>alert(1)</script>"), "King $eller$");
+  assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "King $eller$");
 });
 
 test("renders install page markup", () => {

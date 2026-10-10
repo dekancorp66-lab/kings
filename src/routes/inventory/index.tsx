@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { pageHead } from "@/lib/seo";
 import { getSiteOrigin } from "@/lib/site";
+import { ContactButtons } from "@/components/contact-buttons";
 import { business } from "@/config/business";
 import { SiteShell } from "@/components/layout/site-shell";
 import { SearchPanel } from "@/components/search-panel";
@@ -40,6 +41,8 @@ export const Route = createFileRoute("/inventory/")({
 function InventoryPage() {
   const filters = Route.useSearch();
   const vehicles = useVehicles();
+  // True when the shop has no cars at all (not merely none matching the filters).
+  const shopIsEmpty = vehicles.every((vehicle) => vehicle.status === "sold");
   const list = vehicles.filter((vehicle) => {
     if (vehicle.status === "sold") return false;
     if (filters.make && vehicle.make !== filters.make) return false;
@@ -69,20 +72,32 @@ function InventoryPage() {
         <SearchPanel compact />
       </div>
       <section className="mx-auto max-w-6xl px-5 py-14 lg:px-8">
-        <p className="mb-6 text-sm text-muted">
-          {list.length} {list.length === 1 ? "vehicle" : "vehicles"} available
-        </p>
+        {shopIsEmpty ? null : (
+          <p className="mb-6 text-sm text-muted">
+            {list.length} {list.length === 1 ? "vehicle" : "vehicles"} available
+          </p>
+        )}
         {list.length ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>
+        ) : shopIsEmpty ? (
+          <div className="rounded-2xl bg-surface p-10 text-center shadow-card">
+            <p className="font-serif text-2xl text-ink">New vehicles are on the way</p>
+            <p className="mt-2 text-sm text-muted">
+              We are adding cars to the website. Message us to ask what is available right now.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <ContactButtons />
+            </div>
+          </div>
         ) : (
           <div className="rounded-2xl bg-surface p-10 text-center shadow-card">
-            <p className="font-serif text-2xl text-ink">No motorcars match those filters</p>
+            <p className="font-serif text-2xl text-ink">No vehicles match those filters</p>
             <p className="mt-2 text-sm text-muted">
-              Clear a criterion, or send an enquiry and we will source it.
+              Clear a filter, or message us on WhatsApp and we will help you find one.
             </p>
           </div>
         )}

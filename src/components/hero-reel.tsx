@@ -8,8 +8,8 @@ export function HeroReel() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [index, setIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
-  // Why: on "Data saver" or a slow 2G/3G connection, auto-downloading a video wastes the
-  // visitor's data and slows the whole page. They get the still hero image instead.
+  // Why: on "Data saver" or a 2G connection, auto-downloading a video wastes the visitor's data.
+  // They see the plain dark background instead. (The clips are small now, so 3G is fine.)
   const [saveData, setSaveData] = useState(false);
 
   useEffect(() => {
@@ -25,9 +25,14 @@ export function HeroReel() {
       navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
     ).connection;
     setSaveData(
-      Boolean(connection?.saveData) || /^(slow-2g|2g|3g)$/.test(connection?.effectiveType ?? ""),
+      Boolean(connection?.saveData) || /^(slow-2g|2g)$/.test(connection?.effectiveType ?? ""),
     );
   }, []);
+
+  useEffect(() => {
+    if (reduceMotion || saveData) return;
+    fetch(CLIPS[(index + 1) % CLIPS.length], { cache: "force-cache" }).catch(() => undefined);
+  }, [index, reduceMotion, saveData]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -37,11 +42,9 @@ export function HeroReel() {
     if (play) play.catch(() => undefined);
   }, [index, reduceMotion, saveData]);
 
-  if (reduceMotion || saveData) {
-    return (
-      <img src="/images/hero.jpg" alt="" className="absolute inset-0 size-full object-cover" />
-    );
-  }
+  // Videos only: no still image anywhere. For people who turned motion off (or Data saver),
+  // the section's dark navy background shows instead.
+  if (reduceMotion || saveData) return null;
 
   return (
     <video
@@ -52,7 +55,6 @@ export function HeroReel() {
       muted
       playsInline
       preload="auto"
-      poster="/images/hero.jpg"
       onEnded={() => setIndex((current) => (current + 1) % CLIPS.length)}
       aria-hidden="true"
     >

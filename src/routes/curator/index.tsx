@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { AddVehicleForm } from "@/components/curator/add-vehicle-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Appointment, Inquiry, Vehicle } from "@/data/types";
+import type { Appointment, Inquiry, PublicVehicle, Vehicle } from "@/data/types";
 import {
   curatorLogout,
   curatorMe,
@@ -90,7 +90,7 @@ function CuratorDesk() {
     [vehicles, inquiries, appointments],
   );
 
-  async function changeStatus(vehicle: Vehicle, status: Vehicle["status"]) {
+  async function changeStatus(vehicle: PublicVehicle, status: Vehicle["status"]) {
     try {
       await patchVehicleStatus(vehicle.id, status);
       await router.invalidate(); // refetch stock so the dashboard AND the public site update
@@ -99,7 +99,7 @@ function CuratorDesk() {
     }
   }
 
-  async function deleteVehicle(vehicle: Vehicle) {
+  async function deleteVehicle(vehicle: PublicVehicle) {
     // Deleting is permanent, so ask first. (Marking it "sold" keeps the record.)
     if (
       !window.confirm(
@@ -256,7 +256,6 @@ function CuratorDesk() {
                                 <span className="block font-medium">
                                   {vehicle.name} {vehicle.trim}
                                 </span>
-                                <span className="text-xs text-muted">{vehicle.vin}</span>
                               </span>
                             </Link>
                           </td>

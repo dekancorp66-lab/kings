@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requireCurator } from "@/lib/curator-auth.server";
 import { jsonResponse } from "@/lib/fastapi.server";
 import { MAX_UPLOAD_BYTES, saveUpload, VehicleError } from "@/lib/vehicle-store.server";
+import { readLimitedBody, RequestBodyTooLargeError } from "@/lib/upload-body.server";
 
 export const Route = createFileRoute("/api/uploads")({
   server: {
@@ -17,10 +18,20 @@ export const Route = createFileRoute("/api/uploads")({
           return jsonResponse({ detail: "Photo is larger than 8 MB." }, 413);
         }
 
+        const maxRequestBytes = MAX_UPLOAD_BYTES + 64 * 1024;
         let file: FormDataEntryValue | null = null;
         try {
-          file = (await request.formData()).get("file");
-        } catch {
+          const body = await readLimitedBody(request, maxRequestBytes);
+          const boundedRequest = new Request(request.url, {
+            method: request.method,
+            headers: request.headers,
+            body: Uint8Array.from(body),
+          });
+          file = (await boundedRequest.formData()).get("file");
+        } catch (error) {
+          if (error instanceof RequestBodyTooLargeError) {
+            return jsonResponse({ detail: "Photo is larger than 8 MB." }, 413);
+          }
           return jsonResponse({ detail: "Expected a multipart upload." }, 400);
         }
         if (!(file instanceof File)) return jsonResponse({ detail: "No photo received." }, 400);

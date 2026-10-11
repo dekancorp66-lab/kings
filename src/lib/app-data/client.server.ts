@@ -261,24 +261,27 @@ const failureMemo = new Map<string, { at: number; result: CallToolResult }>();
 function tokenIdentityKey(token: string): string {
   const payload = token.split(".")[1];
   if (payload) {
+    let claims: unknown = null;
     try {
-      const claims: unknown = JSON.parse(
+      claims = JSON.parse(
         Buffer.from(payload, "base64url").toString("utf8"),
       );
-      if (claims && typeof claims === "object" && !Array.isArray(claims)) {
-        const { sub, team_id: teamId } = claims as {
-          sub?: unknown;
-          team_id?: unknown;
-        };
-        if (typeof sub === "string" && sub) {
-          return createHash("sha256")
-            .update(
-              JSON.stringify([sub, typeof teamId === "string" ? teamId : null]),
-            )
-            .digest("base64url");
-        }
+    } catch {
+      claims = null;
+    }
+    if (claims && typeof claims === "object" && !Array.isArray(claims)) {
+      const { sub, team_id: teamId } = claims as {
+        sub?: unknown;
+        team_id?: unknown;
+      };
+      if (typeof sub === "string" && sub) {
+        return createHash("sha256")
+          .update(
+            JSON.stringify([sub, typeof teamId === "string" ? teamId : null]),
+          )
+          .digest("base64url");
       }
-    } catch {}
+    }
   }
   return createHash("sha256").update(token).digest("base64url");
 }

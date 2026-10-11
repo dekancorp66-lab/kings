@@ -22,7 +22,7 @@ running on `127.0.0.1:8000`; otherwise the site serves everything itself.
 
 ```bash
 npm install
-copy .env.example .env      # Windows (use "cp" on Mac/Linux), then fill in the 3 required values
+copy env.example .env       # Windows (use "cp env.example .env" on Mac/Linux)
 npm run dev                 # http://localhost:8080
 ```
 
@@ -34,8 +34,11 @@ Restart `npm run dev` after changing `.env` (it is only read at startup).
 | ------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `MERIDIAN_SECRET`         | yes               | Random text, 32+ characters. Signs the admin login cookie.                                                                    |
 | `MERIDIAN_ADMIN_EMAIL`    | yes               | Admin (dealer desk) email.                                                                                                    |
-| `MERIDIAN_ADMIN_PASSWORD` | yes               | Admin password, 8+ characters. If empty, admin login is switched off.                                                         |
+| `MERIDIAN_ADMIN_PASSWORD` | yes               | Admin password, at least 12 characters in production (8 locally).                                                            |
 | `SITE_URL`                | for the live site | Public address, e.g. `https://yourdomain.co.tz` (no trailing slash). Used for link previews, the sitemap and canonical links. |
+| `RESEND_API_KEY`          | no                | Optional Resend API key for email alerts when a customer sends an enquiry.                                                    |
+| `NOTIFY_EMAIL`            | no                | Alert destination; defaults to the public business email.                                                                     |
+| `NOTIFY_FROM`             | no                | Optional sender address verified with Resend.                                                                                 |
 
 Make a secret with: `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
 Never commit `.env`. On a host, set the same names in its environment settings instead.
@@ -48,16 +51,32 @@ Never commit `.env`. On a host, set the same names in its environment settings i
 
 ## Deploying
 
-Cars and photos are stored as files, so the host needs a **disk that keeps its files** (a VPS or a platform with a
-persistent volume). Hosts with a read-only or temporary disk, such as Vercel serverless, will lose cars and photos.
-For those, move the stock to a database and the photos to object storage first.
+### Recommended: persistent-volume Node host
 
-On the host: set the four environment variables above, run `npm run build`, and start the built server.
+This project stores inventory, enquiries, appointments, and uploaded photos in local files under `data/`, so deploy
+to one Node server with a persistent disk. The production build and start commands are now:
+
+```bash
+npm ci && npm run build:node
+npm start
+```
+
+On Render or another Node host, use Node 22+, mount persistent storage at `<project-root>/data`, and run only one
+app instance. The file store and rate limits are local to that instance. Put the app behind the host's HTTPS proxy,
+back up `data/` off-host, and set `MERIDIAN_SECRET` (32+ random characters), `MERIDIAN_ADMIN_EMAIL`, a unique
+`MERIDIAN_ADMIN_PASSWORD` (12+ characters), and `SITE_URL` in the host's environment settings. Never commit `.env`.
+
+**Vercel is not safe for the current file-backed stores.** `npm run build` still creates the Vercel target, but its
+functions do not provide durable writable storage. To use Vercel, first move records to a durable database and
+photos to object storage; the existing `DATABASE_URL` helper does not yet back these stores.
+
+After registering a domain, attach it in the host's domain settings, apply the DNS records the host provides, and
+set `SITE_URL` to the final HTTPS URL.
 
 ## Before launch
 
-- Replace the 12 demo cars with real stock. To start with an EMPTY inventory, put a file `data/vehicles.json` that
-  contains just `[]`, then restart. (Deleting the file does the opposite: it brings the demo cars back.)
+- Confirm the phone numbers, business email, address, hours, and service claims in `src/config/business.ts` are real.
+- Add verified stock in the dealer desk. The current starting inventory and sample customer records are empty.
 - Read `src/routes/privacy.tsx` and `src/routes/terms.tsx`, edit anything not true for your business, and have them
   reviewed by a lawyer.
 - Check the services text (`src/data/catalog.ts`) describes what you really offer.

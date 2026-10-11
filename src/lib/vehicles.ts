@@ -1,15 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRouteApi } from "@tanstack/react-router";
-import type { Vehicle } from "@/data/types";
+import type { PublicVehicle } from "@/data/types";
 
 /**
  * Loads the live stock list. A server function (not a plain fetch) because route loaders
  * also run during server-side rendering, where a relative "/api/..." URL doesn't resolve.
  * The store is imported dynamically so the Node-only code never reaches the browser bundle.
  */
-export const getVehicles = createServerFn({ method: "GET" }).handler(async (): Promise<Vehicle[]> => {
-  const { listVehicles } = await import("@/lib/vehicle-store.server");
-  return listVehicles();
+export const getVehicles = createServerFn({ method: "GET" }).handler(async (): Promise<PublicVehicle[]> => {
+  const { listPublicVehicles } = await import("@/lib/vehicle-store.server");
+  return listPublicVehicles();
 });
 
 const rootApi = getRouteApi("__root__");
@@ -19,7 +19,7 @@ const rootApi = getRouteApi("__root__");
  * navigation, so every page (home, inventory, contact, curator) sees the same fresh list,
  * and `router.invalidate()` after an admin change refreshes all of them at once.
  */
-export function useVehicles(): Vehicle[] {
+export function useVehicles(): PublicVehicle[] {
   return rootApi.useLoaderData();
 }
 

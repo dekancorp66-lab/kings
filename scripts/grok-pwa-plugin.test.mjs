@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   appNameFromHost,
-  createHeadInjector,
+  createHeadInjector as createHeadInjectorForCwd,
   grokXCreatorHeadTags,
-  injectGrokPwaHead,
+  injectGrokPwaHead as injectGrokPwaHeadForCwd,
   isDocumentPath,
   isInstallQuery,
   publicAppHost,
@@ -24,6 +24,15 @@ import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 process.env.VITE_GROK_EXTENSIONS ??= "1";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const TEST_CWD = mkdtempSync(join(tmpdir(), "grok-pwa-tests-"));
+
+function injectGrokPwaHead(html, context = {}) {
+  return injectGrokPwaHeadForCwd(html, { ...context, cwd: context.cwd ?? TEST_CWD });
+}
+
+function createHeadInjector(context = {}) {
+  return createHeadInjectorForCwd({ ...context, cwd: context.cwd ?? TEST_CWD });
+}
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
@@ -106,14 +115,13 @@ test("does not duplicate x:creator tags", () => {
   assert.equal(twice.split('property="x:creator:id"').length - 1, 1);
 });
 
-test("platform chrome overwrites share-card metas and always sets og:title", () => {
+test("platform chrome preserves route share tags and adds app chrome", () => {
   const html =
     '<html><head><title>Hello World</title><meta property="og:title" content="Old"><meta name="twitter:card" content="summary"></head></html>';
   const out = injectGrokPwaHead(html, { appName: "Wild Race" });
-  assert.match(out, /name="twitter:card" content="summary_large_image"/);
-  assert.match(out, /property="og:title" content="Hello World"/);
-  assert.doesNotMatch(out, /content="Old"/);
-  assert.doesNotMatch(out, /content="summary"/);
+  assert.match(out, /name="twitter:card" content="summary"/);
+  assert.match(out, /property="og:title" content="Old"/);
+  assert.match(out, /apple-mobile-web-app-title" content="Hello World"/);
   assert.equal(out.split('name="twitter:card"').length - 1, 1);
   assert.equal(out.split('property="og:title"').length - 1, 1);
   assert.doesNotMatch(out, /property="og:image"/);
@@ -433,8 +441,11 @@ test("is idempotent", () => {
   assert.equal(once, twice);
 });
 
-test("uses the app name in the injected title tag", () => {
-  const out = injectGrokPwaHead("<html><head></head></html>", { appName: "Wild Race" });
+test("uses the resolved site name in the injected title tag", () => {
+  const out = injectGrokPwaHead("<html><head></head></html>", {
+    appName: "Wild Race",
+    site: { title: "Wild Race" },
+  });
   assert.match(out, /apple-mobile-web-app-title" content="Wild Race"/);
 });
 

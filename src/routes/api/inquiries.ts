@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCurator } from "@/lib/curator-auth.server";
 import { addInquiry, listInquiries } from "@/lib/store.server";
+import { notifyNewInquiry } from "@/lib/notify.server";
 import { bearer, clean, fastapi, isEmail, jsonResponse, readJson } from "@/lib/fastapi.server";
 import { clientIp, isRateLimited } from "@/lib/security.server";
 
@@ -50,7 +51,14 @@ export const Route = createFileRoute("/api/inquiries")({
           body: JSON.stringify(payload),
         });
         if (upstream) return upstream;
-        const row = addInquiry(payload);
+        let row;
+        try {
+          row = addInquiry(payload);
+        } catch {
+          return jsonResponse({ detail: "Could not save the enquiry. Please try again." }, 500);
+        }
+        // Email the dealer. Not awaited, so the customer is never kept waiting; it cannot fail the request.
+        void notifyNewInquiry(row);
         return jsonResponse({ id: row.id, status: "received" });
       },
     },

@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import type { Vehicle } from "@/data/types";
+import type { PublicVehicle } from "@/data/types";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
-export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
+export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
   return (
     <article className="group overflow-hidden rounded-2xl bg-surface shadow-card transition-[box-shadow,transform] duration-200 ease-out hover:shadow-lift">
       <Link to="/inventory/$slug" params={{ slug: vehicle.slug }} className="block">

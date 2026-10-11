@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
-import type { Vehicle } from "@/data/types";
+import type { PublicVehicle, Vehicle } from "@/data/types";
 import { PhotoTile } from "@/components/curator/photo-tile";
 import { createVehicle, uploadVehiclePhoto } from "@/lib/api";
 import type { PhotoCategoryMap } from "@/lib/photo-categories";
@@ -10,7 +10,7 @@ import { firstIssue, vehicleInputSchema } from "@/lib/vehicle-input";
 import { uniqueSorted } from "@/lib/vehicles";
 
 type Props = {
-  existing: Vehicle[]; // used to suggest spellings that already exist (keeps filters tidy)
+  existing: PublicVehicle[]; // used to suggest spellings that already exist (keeps filters tidy)
   onCreated: (vehicle: Vehicle) => void;
   onCancel: () => void;
 };
@@ -25,7 +25,7 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
 
   // <datalist> suggestions: typing "SU" offers the existing "SUV", so "Suv"/"suv" variants
   // don't create duplicate entries in the public search filters.
-  const suggest = (pick: (v: Vehicle) => string) => uniqueSorted(existing.map(pick));
+  const suggest = (pick: (v: PublicVehicle) => string) => uniqueSorted(existing.map(pick));
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;

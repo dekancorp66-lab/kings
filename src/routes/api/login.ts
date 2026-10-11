@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { checkCurator } from "@/lib/store.server";
 import { clean, fastapi, jsonResponse, readJson } from "@/lib/fastapi.server";
-import { adminEmail, clientIp, isHttps, isRateLimited } from "@/lib/security.server";
+import { adminEmail, adminLoginConfigured, clientIp, isHttps, isRateLimited } from "@/lib/security.server";
 import { sessionCookie, signSession } from "@/lib/session.server";
 
 const TOO_MANY = "Too many sign-in attempts. Please wait a few minutes.";
@@ -11,6 +11,10 @@ export const Route = createFileRoute("/api/login")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!adminLoginConfigured()) {
+          return jsonResponse({ detail: "Dealer sign-in is not configured." }, 503);
+        }
+
         // Two buckets on purpose. Per-IP stops one person guessing. The shared bucket is the
         // backstop for attackers who fake their IP header: they still can't exceed it.
         if (
@@ -24,7 +28,7 @@ export const Route = createFileRoute("/api/login")({
         if (!body) return jsonResponse({ detail: "Invalid JSON." }, 400);
         const email = clean(body.email, 120).toLowerCase();
         const password = String(body.password ?? "").slice(0, 128);
-        const secure = isHttps(request);
+        const secure = process.env.NODE_ENV === "production" || isHttps(request);
 
         const upstream = await fastapi("/api/auth/login", {
           method: "POST",

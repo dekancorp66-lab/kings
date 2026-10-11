@@ -32,6 +32,8 @@ export type Vehicle = {
   technical: Spec[];
 };
 
+export type PublicVehicle = Omit<Vehicle, "vin">;
+
 export type Inquiry = {
   id: string;
   firstName: string;

@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { vehicles as seedVehicles } from "@/data/catalog";
-import type { Vehicle, VehicleStatus } from "@/data/types";
+import type { PublicVehicle, Vehicle, VehicleStatus } from "@/data/types";
 import { buildVehicle, slugify, type VehicleParsed } from "@/lib/vehicle-input";
 
 /**
@@ -65,6 +65,10 @@ function load(): Vehicle[] {
 
 export function listVehicles(): Vehicle[] {
   return load();
+}
+
+export function listPublicVehicles(): PublicVehicle[] {
+  return load().map(({ vin: _vin, ...vehicle }) => vehicle);
 }
 
 export function addVehicle(input: VehicleParsed): Vehicle {

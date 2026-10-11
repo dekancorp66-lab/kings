@@ -97,7 +97,14 @@ export function verifyAdminLogin(email: string, password: string): boolean {
 }
 
 export function adminLoginConfigured(): boolean {
-  return readEnv("MERIDIAN_ADMIN_PASSWORD").length >= 8;
+  const password = readEnv("MERIDIAN_ADMIN_PASSWORD");
+  if (password.length < 8) return false;
+  if (process.env.NODE_ENV !== "production") return true;
+  return (
+    readEnv("MERIDIAN_SECRET").length >= 32 &&
+    Boolean(readEnv("MERIDIAN_ADMIN_EMAIL")) &&
+    password.length >= 12
+  );
 }
 
 // ---------------------------------------------------------------------------

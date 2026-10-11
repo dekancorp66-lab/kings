@@ -1,5 +1,5 @@
 import { business } from "@/config/business";
-import type { Vehicle } from "@/data/types";
+import type { PublicVehicle } from "@/data/types";
 import type { DetailedHTMLProps, MetaHTMLAttributes } from "react";
 import { formatKm, formatPrice } from "@/lib/utils";
 
@@ -94,7 +94,7 @@ export function businessJsonLd(origin: string) {
 }
 
 /** Lets Google show the car with its price and mileage in search results. */
-export function vehicleJsonLd(vehicle: Vehicle, origin: string) {
+export function vehicleJsonLd(vehicle: PublicVehicle, origin: string) {
   const title = `${vehicle.year} ${vehicle.name} ${vehicle.trim}`.trim();
   const availability =
     vehicle.status === "sold"
@@ -128,7 +128,7 @@ export function vehicleJsonLd(vehicle: Vehicle, origin: string) {
 }
 
 /** Short, WhatsApp-friendly description: price, km, fuel, gearbox, and where to ask. */
-export function vehicleDescription(vehicle: Vehicle) {
+export function vehicleDescription(vehicle: PublicVehicle) {
   return (
     `${formatPrice(vehicle.price)} · ${formatKm(vehicle.mileage)} · ${vehicle.fuel} · ${vehicle.transmission}. ` +
     `For sale in ${business.city}. Chat with ${business.name} on WhatsApp to ask or arrange a viewing.`

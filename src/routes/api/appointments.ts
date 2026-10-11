@@ -48,7 +48,12 @@ export const Route = createFileRoute("/api/appointments")({
           body: JSON.stringify(payload),
         });
         if (upstream) return upstream;
-        const row = addAppointment(payload);
+        let row;
+        try {
+          row = addAppointment(payload);
+        } catch {
+          return jsonResponse({ detail: "Could not save the appointment. Please try again." }, 500);
+        }
         return jsonResponse({ id: row.id, status: "received" });
       },
     },

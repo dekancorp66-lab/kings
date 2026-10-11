@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCurator } from "@/lib/curator-auth.server";
 import { jsonResponse, readJson } from "@/lib/fastapi.server";
-import { addVehicle, listVehicles, VehicleError } from "@/lib/vehicle-store.server";
+import { addVehicle, listPublicVehicles, VehicleError } from "@/lib/vehicle-store.server";
 import { firstIssue, vehicleInputSchema } from "@/lib/vehicle-input";
 
 export const Route = createFileRoute("/api/vehicles")({
   server: {
     handlers: {
       // Public: the website needs the stock list.
-      GET: async () => jsonResponse({ vehicles: listVehicles() }),
+      GET: async () => jsonResponse({ vehicles: listPublicVehicles() }),
 
       // Admin only: add a new vehicle.
       POST: async ({ request }) => {

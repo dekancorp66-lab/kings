@@ -24,7 +24,12 @@ export const Route = createFileRoute("/api/inquiries/$id")({
         });
         if (upstream) return upstream;
         if (!allowed.has(status)) return jsonResponse({ detail: "Unknown status." }, 422);
-        const row = updateInquiry(params.id, status);
+        let row;
+        try {
+          row = updateInquiry(params.id, status);
+        } catch {
+          return jsonResponse({ detail: "Could not save the change." }, 500);
+        }
         if (!row) return jsonResponse({ detail: "Enquiry not found." }, 404);
         return jsonResponse({ id: row.id, status: row.status });
       },

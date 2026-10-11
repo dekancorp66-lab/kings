@@ -8,11 +8,11 @@ import { ContactButtons } from "@/components/contact-buttons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
-import type { Vehicle } from "@/data/types";
+import type { PublicVehicle } from "@/data/types";
 import { getVehicles } from "@/lib/vehicles";
 import { formatPrice } from "@/lib/utils";
 
-type VehicleLoaderData = { vehicle: Vehicle; origin: string };
+type VehicleLoaderData = { vehicle: PublicVehicle; origin: string };
 
 /** What WhatsApp/Facebook show when someone shares the link: photo, name, price. */
 function vehicleHead(data: VehicleLoaderData | undefined) {

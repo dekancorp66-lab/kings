@@ -50,7 +50,7 @@ export function HeroReel() {
     <video
       ref={videoRef}
       key={CLIPS[index]}
-      className="absolute inset-0 size-full object-cover"
+      className="absolute inset-0 size-full object-cover brightness-[1.1] saturate-[1.08]"
       autoPlay
       muted
       playsInline

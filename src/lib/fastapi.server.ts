@@ -1,4 +1,7 @@
+import { readLimitedBody } from "@/lib/upload-body.server";
+
 const FASTAPI = "http://127.0.0.1:8000";
+const MAX_JSON_BODY_BYTES = 64 * 1024;
 
 export async function fastapi(path: string, init: RequestInit = {}, timeoutMs = 2500) {
   const controller = new AbortController();
@@ -34,7 +37,10 @@ export function jsonResponse(data: unknown, status = 200) {
 
 export async function readJson(request: Request) {
   try {
-    return (await request.json()) as Record<string, unknown>;
+    const body = await readLimitedBody(request, MAX_JSON_BODY_BYTES);
+    const value: unknown = JSON.parse(new TextDecoder().decode(body));
+    if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+    return value as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -54,8 +60,11 @@ export function isEmail(value: string) {
 }
 
 export function clean(value: unknown, max: number) {
-  return String(value ?? "")
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "")
-    .trim()
-    .slice(0, max);
+  const text = Array.from(String(value ?? ""))
+    .filter((character) => {
+      const code = character.charCodeAt(0);
+      return code >= 0x20 || code === 0x09 || code === 0x0a || code === 0x0d;
+    })
+    .join("");
+  return text.trim().slice(0, max);
 }

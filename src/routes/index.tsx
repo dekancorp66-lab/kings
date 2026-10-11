@@ -9,6 +9,7 @@ import { SearchPanel } from "@/components/search-panel";
 import { Button } from "@/components/ui/button";
 import { VehicleCard } from "@/components/vehicle-card";
 import { ContactButtons } from "@/components/contact-buttons";
+import { TanzaniaMap } from "@/components/tanzania-map";
 import { business } from "@/config/business";
 import { standards } from "@/data/catalog";
 import { useVehicles } from "@/lib/vehicles";
@@ -155,17 +156,8 @@ function Home() {
               </li>
             </ul>
           </div>
-          <div className="flex flex-col justify-center rounded-2xl bg-navy p-8 text-inverse shadow-card">
-            <p className="text-micro font-semibold tracking-mark text-inverse/60 uppercase">
-              Talk to us now
-            </p>
-            <h3 className="mt-2 font-serif text-3xl">Ask about any car on WhatsApp</h3>
-            <p className="mt-3 text-sm text-inverse/70">
-              Send us a message or call. We are open 24 hours a day, 7 days a week.
-            </p>
-            <div className="mt-6">
-              <ContactButtons tone="dark" />
-            </div>
+          <div className="flex flex-col justify-center">
+            <TanzaniaMap />
           </div>
         </div>
       </section>

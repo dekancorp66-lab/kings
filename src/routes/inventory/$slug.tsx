@@ -11,6 +11,7 @@ import { business } from "@/config/business";
 import type { PublicVehicle } from "@/data/types";
 import { getVehicles } from "@/lib/vehicles";
 import { formatPrice } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 type VehicleLoaderData = { vehicle: PublicVehicle; origin: string };
 
@@ -44,14 +45,17 @@ export const Route = createFileRoute("/inventory/$slug")({
 
 function VehicleDetail() {
   const { vehicle } = Route.useLoaderData();
+  const { t, tData } = useI18n();
 
   // The page link is added after mount (not during render) so the server and browser HTML match.
   const [pageUrl, setPageUrl] = useState("");
   useEffect(() => setPageUrl(window.location.href), []);
   const whatsappMessage =
-    `Hello ${business.name}, I am interested in the ${vehicle.year} ${vehicle.name} ${vehicle.trim} ` +
-    `(${formatPrice(vehicle.price)}). Is it still available?` +
-    (pageUrl ? `\n${pageUrl}` : "");
+    t("wa.interest", {
+      name: business.name,
+      car: `${vehicle.year} ${vehicle.name} ${vehicle.trim}`,
+      price: formatPrice(vehicle.price),
+    }) + (pageUrl ? `\n${pageUrl}` : "");
 
   return (
     <SiteShell>
@@ -66,7 +70,7 @@ function VehicleDetail() {
         </div>
 
         <div>
-          {vehicle.badge === "new" ? <Badge tone="accent">New arrival</Badge> : null}
+          {vehicle.badge === "new" ? <Badge tone="accent">{t("detail.newArrival")}</Badge> : null}
           <p className="mt-3 text-sm text-muted">{vehicle.year}</p>
           <h1 className="font-serif text-3xl text-ink md:text-4xl">
             {vehicle.name} {vehicle.trim}
@@ -79,21 +83,23 @@ function VehicleDetail() {
           <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-6">
             {vehicle.specs.map((spec) => (
               <div key={spec.label}>
-                <dt className="text-micro tracking-nav text-subtle uppercase">{spec.label}</dt>
-                <dd className="mt-1 text-sm font-medium text-ink">{spec.value}</dd>
+                <dt className="text-micro tracking-nav text-subtle uppercase">
+                  {tData("spec", spec.label)}
+                </dt>
+                <dd className="mt-1 text-sm font-medium text-ink">{tData("val", spec.value)}</dd>
               </div>
             ))}
           </dl>
 
           <div className="mt-6">
-            <p className="mb-3 text-sm font-semibold text-ink">Interested? Ask us on WhatsApp</p>
+            <p className="mb-3 text-sm font-semibold text-ink">{t("detail.ask")}</p>
             <ContactButtons message={whatsappMessage} />
           </div>
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="outline" className="flex-1">
               <Link to="/contact" search={{ vehicle: vehicle.slug }}>
-                Contact dealer
+                {t("detail.contactDealer")}
               </Link>
             </Button>
           </div>
@@ -102,14 +108,14 @@ function VehicleDetail() {
 
       <section className="mx-auto max-w-6xl px-5 pb-20 lg:px-8">
         <div className="rounded-2xl bg-surface p-6 shadow-card md:p-10">
-          <h2 className="font-serif text-2xl text-ink md:text-3xl">Technical Specifications</h2>
+          <h2 className="font-serif text-2xl text-ink md:text-3xl">{t("detail.techTitle")}</h2>
           <dl className="mt-8 grid gap-x-10 gap-y-5 sm:grid-cols-2">
             {vehicle.technical.map((spec) => (
               <div
                 key={spec.label}
                 className="flex items-baseline justify-between gap-4 border-b border-line pb-3"
               >
-                <dt className="text-sm text-muted">{spec.label}</dt>
+                <dt className="text-sm text-muted">{tData("spec", spec.label)}</dt>
                 <dd className="text-sm font-semibold text-ink">{spec.value}</dd>
               </div>
             ))}

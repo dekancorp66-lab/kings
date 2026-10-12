@@ -7,6 +7,7 @@ import {
   type PhotoCategoryMap,
 } from "@/lib/photo-categories";
 import { cn } from "@/lib/utils";
+import { useI18n, type TranslationKey } from "@/lib/i18n";
 
 /**
  * BeForward-style gallery for the car detail page:
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 type Props = { images: string[]; alt: string; categories?: PhotoCategoryMap };
 
 export function VehicleGallery({ images, alt, categories }: Props) {
+  const { t } = useI18n();
   const [filter, setFilter] = useState<PhotoCategory | "All">("All");
   const [index, setIndex] = useState(0);
   const [open, setOpen] = useState(false);
@@ -102,7 +104,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
   return (
     <div>
       {tabs.length > 0 ? (
-        <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Photo categories">
+        <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label={t("gallery.categories")}>
           {tabs.map((tab) => {
             const total =
               tab === "All"
@@ -125,7 +127,8 @@ export function VehicleGallery({ images, alt, categories }: Props) {
                     : "bg-surface text-muted shadow-card hover:text-ink",
                 )}
               >
-                {tab} <span className="opacity-60">({total})</span>
+                {tab === "All" ? t("gallery.all") : t(`gallery.${tab}` as TranslationKey)}{" "}
+                <span className="opacity-60">({total})</span>
               </button>
             );
           })}
@@ -141,7 +144,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
           type="button"
           onClick={() => setOpen(true)}
           className="block w-full cursor-zoom-in"
-          aria-label="Open fullscreen"
+          aria-label={t("gallery.fullscreen")}
         >
           <img src={current} alt={alt} className="aspect-16/10 w-full object-cover" />
         </button>
@@ -152,7 +155,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
               type="button"
               onClick={() => go(-1)}
               className={cn(arrow, "left-3")}
-              aria-label="Previous photo"
+              aria-label={t("gallery.prev")}
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -160,7 +163,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
               type="button"
               onClick={() => go(1)}
               className={cn(arrow, "right-3")}
-              aria-label="Next photo"
+              aria-label={t("gallery.next")}
             >
               <ChevronRight className="size-5" />
             </button>
@@ -182,7 +185,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
               key={src}
               type="button"
               onClick={() => setIndex(i)}
-              aria-label={`Show photo ${i + 1}`}
+              aria-label={t("gallery.show", { n: i + 1 })}
               className={cn(
                 "w-24 shrink-0 overflow-hidden rounded-lg ring-2 ring-offset-2 ring-offset-canvas transition-[box-shadow,opacity] duration-150",
                 i === index ? "ring-accent" : "opacity-70 ring-transparent hover:opacity-100",
@@ -199,7 +202,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
           className="fixed inset-0 z-50 flex flex-col bg-black/95"
           role="dialog"
           aria-modal="true"
-          aria-label="Photo viewer"
+          aria-label={t("gallery.viewer")}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
@@ -210,7 +213,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close"
+              aria-label={t("gallery.close")}
               className="rounded-full p-2 hover:bg-white/10"
             >
               <X className="size-6" />
@@ -235,7 +238,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
                     go(-1);
                   }}
                   className={cn(arrow, "left-4")}
-                  aria-label="Previous photo"
+                  aria-label={t("gallery.prev")}
                 >
                   <ChevronLeft className="size-6" />
                 </button>
@@ -246,7 +249,7 @@ export function VehicleGallery({ images, alt, categories }: Props) {
                     go(1);
                   }}
                   className={cn(arrow, "right-4")}
-                  aria-label="Next photo"
+                  aria-label={t("gallery.next")}
                 >
                   <ChevronRight className="size-6" />
                 </button>

@@ -6,6 +6,7 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { ContactButtons } from "@/components/contact-buttons";
 import { business } from "@/config/business";
 import { useVehicles } from "@/lib/vehicles";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   const { vehicle: slug } = Route.useSearch();
+  const { t } = useI18n();
   const vehicles = useVehicles();
   const match = vehicles.find((item) => item.slug === slug);
   const defaultVehicle = match ? `${match.year} ${match.name} ${match.trim}` : "";
@@ -34,12 +36,11 @@ function ContactPage() {
       <section className="bg-navy px-5 py-16 text-inverse">
         <div className="mx-auto max-w-6xl">
           <p className="text-micro font-semibold tracking-mark text-inverse/60 uppercase">
-            Get in touch
+            {t("contact.eyebrow")}
           </p>
-          <h1 className="mt-2 font-serif text-4xl md:text-5xl">Contact</h1>
+          <h1 className="mt-2 font-serif text-4xl md:text-5xl">{t("contact.title")}</h1>
           <p className="mt-3 max-w-xl text-sm text-inverse/70">
-            Message us on WhatsApp, call, or send the form below. A real person reads every message,
-            and we are open 24 hours a day, 7 days a week.
+            {t("contact.intro")}
           </p>
         </div>
       </section>
@@ -53,16 +54,15 @@ function ContactPage() {
             </a>
           </p>
           <div className="mt-6 space-y-1 text-sm text-muted">
-            {business.hours.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
+            <p>{t("biz.hours1")}</p>
+            <p>{t("biz.hours2")}</p>
           </div>
           <div className="mt-6">
-            <ContactButtons message={`Hello ${business.name}, I would like to ask about a car.`} />
+            <ContactButtons message={t("wa.greeting", { name: business.name })} />
           </div>
         </aside>
         <div className="rounded-2xl bg-surface p-6 shadow-card md:p-8">
-          <h2 className="font-serif text-2xl text-ink">Send a Direct Enquiry</h2>
+          <h2 className="font-serif text-2xl text-ink">{t("home.enqTitle")}</h2>
           <div className="mt-6">
             <EnquiryForm defaultVehicle={defaultVehicle} />
           </div>

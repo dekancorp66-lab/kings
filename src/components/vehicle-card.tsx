@@ -3,8 +3,10 @@ import type { PublicVehicle } from "@/data/types";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { useI18n } from "@/lib/i18n";
 
 export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
+  const { t } = useI18n();
   return (
     <article className="group overflow-hidden rounded-2xl bg-surface shadow-card transition-[box-shadow,transform] duration-200 ease-out hover:shadow-lift">
       <Link to="/inventory/$slug" params={{ slug: vehicle.slug }} className="block">
@@ -18,7 +20,7 @@ export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
           />
           {vehicle.badge === "new" ? (
             <Badge tone="accent" className="absolute top-3 left-3">
-              New
+              {t("card.new")}
             </Badge>
           ) : null}
         </div>
@@ -34,7 +36,7 @@ export function VehicleCard({ vehicle }: { vehicle: PublicVehicle }) {
           </p>
           <Button asChild size="sm">
             <Link to="/inventory/$slug" params={{ slug: vehicle.slug }}>
-              Details
+              {t("card.details")}
             </Link>
           </Button>
         </div>

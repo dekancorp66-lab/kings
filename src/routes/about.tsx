@@ -6,6 +6,7 @@ import { business } from "@/config/business";
 import { SiteShell } from "@/components/layout/site-shell";
 import { PageHero } from "@/components/page-hero";
 import { pillars } from "@/data/catalog";
+import { useI18n, type TranslationKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/about")({
   loader: () => getSiteOrigin(),
@@ -22,55 +23,58 @@ export const Route = createFileRoute("/about")({
 const PILLAR_ICONS = [Shield, Sparkles, Users];
 
 function AboutPage() {
+  const { t } = useI18n();
   return (
     <SiteShell>
       <PageHero
-        eyebrow="Who we are"
-        title={`About ${business.name}`}
-        subtitle={`${business.tagline}. Message or call us any time, 24 hours a day, 7 days a week.`}
+        compact
+        eyebrow={t("about.eyebrow")}
+        title={t("about.title", { name: business.name })}
+        subtitle={`${t("biz.tagline")}. ${t("about.subtitle")}`}
         image="/images/about-hero.jpg"
       />
 
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 lg:grid-cols-2 lg:px-8">
         <div className="overflow-hidden rounded-2xl shadow-card">
           <img
-            src="/images/showroom.jpg"
-            alt={`${business.name} showroom`}
-            className="aspect-4/3 w-full object-cover"
+            src="/images/king-sellers-logo.jpg"
+            alt={`${business.name} logo`}
+            className="aspect-square w-full object-cover"
           />
         </div>
         <div>
-          <p className="text-micro font-semibold tracking-mark text-accent uppercase">Our story</p>
+          <p className="text-micro font-semibold tracking-mark text-accent uppercase">
+            {t("about.storyEyebrow")}
+          </p>
           <h2 className="mt-2 font-serif text-3xl text-ink md:text-4xl">
-            Cars You Can Ask Us About, Any Time
+            {t("about.storyTitle")}
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            {business.name} is a car dealership based in {business.city}, {business.country}. We
-            help buyers find a vehicle that suits their needs and budget, and we keep the process
-            simple: clear prices, straight answers, and a real person on the other end of the phone.
+            {t("about.p1", { name: business.name, city: business.city, country: business.country })}
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            You can reach us on WhatsApp or by phone at any hour. Browse the inventory, pick a car,
-            and message us to ask questions or arrange a viewing.
+            {t("about.p2")}
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">
         <p className="text-center text-micro font-semibold tracking-mark text-accent uppercase">
-          What we stand for
+          {t("about.stand")}
         </p>
-        <h2 className="mt-2 text-center font-serif text-3xl text-ink">Our Promises</h2>
+        <h2 className="mt-2 text-center font-serif text-3xl text-ink">{t("about.promises")}</h2>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {pillars.map((item, index) => {
             const Icon = PILLAR_ICONS[index] ?? Shield;
+            const titleKey = `pillar.${index}.title` as TranslationKey;
+            const bodyKey = `pillar.${index}.body` as TranslationKey;
             return (
               <article key={item.title} className="rounded-2xl bg-surface p-7 shadow-card">
                 <span className="grid size-11 place-items-center rounded-full bg-canvas text-accent">
                   <Icon className="size-5" />
                 </span>
-                <h3 className="mt-5 text-lg font-semibold text-ink">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
+                <h3 className="mt-5 text-lg font-semibold text-ink">{t(titleKey)}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{t(bodyKey)}</p>
               </article>
             );
           })}

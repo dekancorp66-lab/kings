@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { Providers } from "@/components/providers";
 import { getVehicles } from "@/lib/vehicles";
+import { useI18n } from "@/lib/i18n";
 import appCss from "../styles.css?url";
 
 const APP_NAME = business.name;
@@ -58,19 +59,20 @@ function RootDocument() {
 }
 
 function NotFound() {
+  const { t } = useI18n();
   return (
     <main className="grid min-h-svh place-items-center bg-canvas px-6 text-center text-ink">
       <div>
         <p className="text-micro font-semibold tracking-mark uppercase text-muted">404</p>
-        <h1 className="mt-3 font-serif text-4xl">We could not find that page</h1>
+        <h1 className="mt-3 font-serif text-4xl">{t("nf.title")}</h1>
         <p className="mt-3 text-sm text-muted">
-          The vehicle or page you requested is no longer listed.
+          {t("nf.body")}
         </p>
         <a
           href="/"
           className="mt-6 inline-flex h-11 items-center rounded-lg bg-accent px-5 text-sm text-inverse"
         >
-          Return home
+          {t("nf.home")}
         </a>
       </div>
     </main>

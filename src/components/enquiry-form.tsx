@@ -4,9 +4,11 @@ import { submitInquiry } from "@/lib/api";
 import { useVehicles } from "@/lib/vehicles";
 import { Button } from "./ui/button";
 import { Input, Label, Select, Textarea } from "./ui/input";
+import { useI18n } from "@/lib/i18n";
 
 export function EnquiryForm({ defaultVehicle = "" }: { defaultVehicle?: string }) {
   const [pending, setPending] = useState(false);
+  const { t } = useI18n();
   const vehicles = useVehicles();
 
   return (
@@ -27,41 +29,41 @@ export function EnquiryForm({ defaultVehicle = "" }: { defaultVehicle?: string }
           website: String(data.get("website") ?? ""),
         };
         if (payload.message.length < 8) {
-          toast.error("Please tell us a little more in your message.");
+          toast.error(t("form.tooShort"));
           return;
         }
         setPending(true);
         try {
           await submitInquiry(payload);
           form.reset();
-          toast.success("Thank you! We received your enquiry and will reply shortly.");
+          toast.success(t("form.thanks"));
         } catch (error) {
-          toast.error(error instanceof Error ? error.message : "Unable to send just now.");
+          toast.error(error instanceof Error ? error.message : t("form.failed"));
         } finally {
           setPending(false);
         }
       }}
     >
       <div>
-        <Label htmlFor="firstName">First name</Label>
+        <Label htmlFor="firstName">{t("form.firstName")}</Label>
         <Input id="firstName" name="firstName" required maxLength={60} autoComplete="given-name" />
       </div>
       <div>
-        <Label htmlFor="lastName">Last name</Label>
+        <Label htmlFor="lastName">{t("form.lastName")}</Label>
         <Input id="lastName" name="lastName" required maxLength={60} autoComplete="family-name" />
       </div>
       <div>
-        <Label htmlFor="email">Email address</Label>
+        <Label htmlFor="email">{t("form.email")}</Label>
         <Input id="email" name="email" type="email" required maxLength={120} autoComplete="email" />
       </div>
       <div>
-        <Label htmlFor="phone">Phone number</Label>
+        <Label htmlFor="phone">{t("form.phone")}</Label>
         <Input id="phone" name="phone" required maxLength={32} autoComplete="tel" />
       </div>
       <div className="md:col-span-2">
-        <Label htmlFor="vehicle">Vehicle of interest</Label>
+        <Label htmlFor="vehicle">{t("form.vehicle")}</Label>
         <Select id="vehicle" name="vehicle" defaultValue={defaultVehicle}>
-          <option value="">General enquiry</option>
+          <option value="">{t("form.general")}</option>
           {vehicles.map((item) => (
             <option key={item.id} value={`${item.year} ${item.name} ${item.trim}`}>
               {item.year} {item.name} {item.trim}
@@ -70,14 +72,14 @@ export function EnquiryForm({ defaultVehicle = "" }: { defaultVehicle?: string }
         </Select>
       </div>
       <div className="md:col-span-2">
-        <Label htmlFor="message">Message</Label>
+        <Label htmlFor="message">{t("form.message")}</Label>
         <Textarea
           id="message"
           name="message"
           required
           minLength={8}
           maxLength={2000}
-          placeholder="Tell us what you are looking for."
+          placeholder={t("form.placeholder")}
         />
       </div>
       {/* Honeypot: off-screen and skipped by keyboard/screen readers, so only bots touch it. */}
@@ -87,7 +89,7 @@ export function EnquiryForm({ defaultVehicle = "" }: { defaultVehicle?: string }
       </div>
       <div className="md:col-span-2">
         <Button type="submit" disabled={pending} className="min-w-40">
-          {pending ? "Sending…" : "Send message"}
+          {pending ? t("form.sending") : t("form.send")}
         </Button>
       </div>
     </form>

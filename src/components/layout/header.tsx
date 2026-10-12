@@ -3,18 +3,21 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/inventory", label: "Inventory" },
-  { to: "/services", label: "Services" },
-  { to: "/about", label: "About Us" },
-  { to: "/contact", label: "Contact" },
+  { to: "/", key: "nav.home" },
+  { to: "/inventory", key: "nav.inventory" },
+  { to: "/services", key: "nav.services" },
+  { to: "/about", key: "nav.about" },
+  { to: "/contact", key: "nav.contact" },
 ] as const;
 
 export function Header() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/95 backdrop-blur-md">
@@ -40,17 +43,18 @@ export function Header() {
                   active ? "text-ink" : "text-muted hover:text-ink",
                 )}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             );
           })}
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <button
             type="button"
             className="grid size-11 place-items-center rounded-lg text-ink lg:hidden"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("header.closeMenu") : t("header.openMenu")}
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -68,7 +72,7 @@ export function Header() {
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-3 text-sm font-medium text-ink hover:bg-canvas"
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
           </nav>

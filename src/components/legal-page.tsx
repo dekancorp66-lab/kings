@@ -1,5 +1,6 @@
 import { SiteShell } from "@/components/layout/site-shell";
 import { PageHero } from "@/components/page-hero";
+import { useI18n } from "@/lib/i18n";
 
 export type LegalSection = { heading: string; paragraphs: string[] };
 
@@ -20,6 +21,7 @@ export function LegalPage({
   updated: string;
   sections: LegalSection[];
 }) {
+  const { t } = useI18n();
   return (
     <SiteShell>
       <PageHero
@@ -30,7 +32,7 @@ export function LegalPage({
       />
       <article className="mx-auto max-w-3xl px-5 py-16 lg:px-8">
         <p className="text-xs font-semibold tracking-nav text-subtle uppercase">
-          Last updated: {updated}
+          {t("legal.updatedLabel")} {updated}
         </p>
         <div className="mt-8 space-y-10">
           {sections.map((section) => (

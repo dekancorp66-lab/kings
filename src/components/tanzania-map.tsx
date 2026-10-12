@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n, type TranslationKey } from "@/lib/i18n";
 
 /**
  * Branch locations drawn on top of the REAL Tanzania map image
@@ -11,18 +12,21 @@ import { useState } from "react";
  * To nudge a pin, change x (left→right) or y (top→bottom) by 0.5–1 at a time.
  */
 const branches = [
-  { id: "mbeya", city: "Mbeya", place: "Century Plaza", x: 37.6, y: 80.1, query: "Century Plaza Mbeya Tanzania" },
-  { id: "arusha", city: "Arusha", place: "NSSF, 3rd floor", x: 49.9, y: 37.1, query: "NSSF Building Arusha Tanzania" },
-  { id: "mwanza", city: "Mwanza", place: "Mongo House, Nyerere Road", x: 32.1, y: 32.4, query: "Mongo House Nyerere Road Mwanza Tanzania" },
-  { id: "dodoma", city: "Dodoma", place: "Hotel Tower, 2nd floor", x: 48.3, y: 54.3, query: "Hotel Tower Dodoma Tanzania" },
-  { id: "bukoba", city: "Bukoba", place: "NSSF Tower", x: 30.0, y: 17.4, query: "NSSF Tower Bukoba Tanzania" },
-  { id: "dar", city: "Dar es Salaam", place: "Manzese Tiptop", x: 70.8, y: 61.3, query: "Manzese Tiptop Dar es Salaam Tanzania" },
+  { id: "mbeya", city: "Mbeya", x: 37.6, y: 80.1, query: "Century Plaza Mbeya Tanzania" },
+  { id: "arusha", city: "Arusha", x: 49.9, y: 37.1, query: "NSSF Building Arusha Tanzania" },
+  { id: "mwanza", city: "Mwanza", x: 32.1, y: 32.4, query: "Mongo House Nyerere Road Mwanza Tanzania" },
+  { id: "dodoma", city: "Dodoma", x: 48.3, y: 54.3, query: "Hotel Tower Dodoma Tanzania" },
+  { id: "bukoba", city: "Bukoba", x: 30.0, y: 17.4, query: "NSSF Tower Bukoba Tanzania" },
+  { id: "dar", city: "Dar es Salaam", x: 70.8, y: 61.3, query: "Manzese Tiptop Dar es Salaam Tanzania" },
 ] as const;
 
 const directionsUrl = (query: string) =>
   `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(query)}`;
 
+// Branch address text is translated via the keys "map.<id>" in lib/i18n.tsx.
 export function TanzaniaMap() {
+  const { t } = useI18n();
+  const place = (id: string) => t(`map.${id}` as TranslationKey);
   // Shared hover/focus state so the pin and the legend list highlight each other.
   const [active, setActive] = useState<string | null>(null);
 
@@ -35,7 +39,7 @@ export function TanzaniaMap() {
       <div className="relative w-full" style={{ aspectRatio: "860 / 558" }}>
         <img
           src="/images/tanzania-map.png"
-          alt="Map of Tanzania showing our branches"
+          alt={t("map.alt")}
           className="absolute inset-0 h-full w-full select-none"
           draggable={false}
         />
@@ -46,7 +50,7 @@ export function TanzaniaMap() {
             <button
               key={b.id}
               type="button"
-              aria-label={`${b.city} – ${b.place}. Get directions`}
+              aria-label={`${b.city} – ${place(b.id)}. ${t("map.directions")}`}
               onClick={() => open(b.query)}
               onMouseEnter={() => setActive(b.id)}
               onMouseLeave={() => setActive(null)}
@@ -70,7 +74,7 @@ export function TanzaniaMap() {
                 }`}
               >
                 <strong className="block text-[12px]">{b.city}</strong>
-                {b.place}
+                {place(b.id)}
               </span>
             </button>
           );
@@ -93,7 +97,7 @@ export function TanzaniaMap() {
               <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-red-600" />
               <span>
                 <span className="block font-semibold text-slate-900">{b.city}</span>
-                <span className="text-slate-600">{b.place}</span>
+                <span className="text-slate-600">{place(b.id)}</span>
               </span>
             </button>
           </li>

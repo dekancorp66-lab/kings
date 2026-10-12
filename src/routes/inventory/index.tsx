@@ -7,6 +7,7 @@ import { SiteShell } from "@/components/layout/site-shell";
 import { SearchPanel } from "@/components/search-panel";
 import { VehicleCard } from "@/components/vehicle-card";
 import { useVehicles } from "@/lib/vehicles";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/inventory/")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/inventory/")({
 });
 
 function InventoryPage() {
+  const { t } = useI18n();
   const filters = Route.useSearch();
   const vehicles = useVehicles();
   // True when the shop has no cars at all (not merely none matching the filters).
@@ -56,15 +58,14 @@ function InventoryPage() {
 
   return (
     <SiteShell>
-      <section className="bg-navy px-5 py-16 text-inverse">
+      <section className="border-b-2 border-accent/50 bg-navy px-5 py-6 text-inverse md:py-7">
         <div className="mx-auto max-w-6xl">
           <p className="text-micro font-semibold tracking-mark text-inverse/60 uppercase">
-            The catalogue
+            {t("inv.eyebrow")}
           </p>
-          <h1 className="mt-2 font-serif text-4xl md:text-5xl">Inventory</h1>
-          <p className="mt-3 max-w-xl text-sm text-inverse/70">
-            Vehicles currently available from {business.name}. Message us on WhatsApp to ask about
-            any car.
+          <h1 className="mt-1 font-serif text-3xl md:text-4xl">{t("inv.title")}</h1>
+          <p className="mt-1.5 max-w-3xl text-sm text-inverse/70">
+            {t("inv.intro", { name: business.name })}
           </p>
         </div>
       </section>
@@ -74,7 +75,7 @@ function InventoryPage() {
       <section className="mx-auto max-w-6xl px-5 py-14 lg:px-8">
         {shopIsEmpty ? null : (
           <p className="mb-6 text-sm text-muted">
-            {list.length} {list.length === 1 ? "vehicle" : "vehicles"} available
+            {list.length === 1 ? t("inv.countOne") : t("inv.countMany", { n: list.length })}
           </p>
         )}
         {list.length ? (
@@ -85,9 +86,9 @@ function InventoryPage() {
           </div>
         ) : shopIsEmpty ? (
           <div className="rounded-2xl bg-surface p-10 text-center shadow-card">
-            <p className="font-serif text-2xl text-ink">New vehicles are on the way</p>
+            <p className="font-serif text-2xl text-ink">{t("inv.emptyTitle")}</p>
             <p className="mt-2 text-sm text-muted">
-              We are adding cars to the website. Message us to ask what is available right now.
+              {t("inv.emptyBody")}
             </p>
             <div className="mt-6 flex justify-center">
               <ContactButtons />
@@ -95,9 +96,9 @@ function InventoryPage() {
           </div>
         ) : (
           <div className="rounded-2xl bg-surface p-10 text-center shadow-card">
-            <p className="font-serif text-2xl text-ink">No vehicles match those filters</p>
+            <p className="font-serif text-2xl text-ink">{t("inv.noMatchTitle")}</p>
             <p className="mt-2 text-sm text-muted">
-              Clear a filter, or message us on WhatsApp and we will help you find one.
+              {t("inv.noMatchBody")}
             </p>
           </div>
         )}

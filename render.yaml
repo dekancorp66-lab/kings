@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: king-sellers-dealership
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build:node
+    startCommand: npm start
+    autoDeploy: true
+    disk:
+      name: king-sellers-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 5
+    envVars:
+      - key: MERIDIAN_SECRET
+        generateValue: true
+      - key: MERIDIAN_ADMIN_EMAIL
+        sync: false
+      - key: MERIDIAN_ADMIN_PASSWORD
+        sync: false
+      - key: SITE_URL
+        sync: false

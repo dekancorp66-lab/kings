@@ -66,6 +66,11 @@ app instance. The file store and rate limits are local to that instance. Put the
 back up `data/` off-host, and set `MERIDIAN_SECRET` (32+ random characters), `MERIDIAN_ADMIN_EMAIL`, a unique
 `MERIDIAN_ADMIN_PASSWORD` (12+ characters), and `SITE_URL` in the host's environment settings. Never commit `.env`.
 
+For Render, create a Blueprint from this repository and use the included `render.yaml`. Enter the admin email and
+password plus the public `SITE_URL` when prompted. The Blueprint creates a public Node service, generates the session
+secret, mounts a persistent disk at `data/`, and deploys future commits automatically. The service and disk use a paid
+Render plan; review the current price in Render before confirming deployment.
+
 **Vercel is not safe for the current file-backed stores.** `npm run build` still creates the Vercel target, but its
 functions do not provide durable writable storage. To use Vercel, first move records to a durable database and
 photos to object storage; the existing `DATABASE_URL` helper does not yet back these stores.

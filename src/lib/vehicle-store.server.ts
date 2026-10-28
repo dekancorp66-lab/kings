@@ -73,7 +73,7 @@ export function listPublicVehicles(): PublicVehicle[] {
 
 export function addVehicle(input: VehicleParsed): Vehicle {
   const list = load();
-  if (list.some((item) => item.vin.toUpperCase() === input.vin.toUpperCase())) {
+  if (input.vin && list.some((item) => item.vin && item.vin.toUpperCase() === input.vin.toUpperCase())) {
     throw new VehicleError("A vehicle with that VIN / chassis number already exists.", 409);
   }
   // Slugs are the page URL (/inventory/<slug>), so they must be unique: add -2, -3…
@@ -95,6 +95,25 @@ export function updateVehicleStatus(id: string, status: VehicleStatus): Vehicle 
   const updated = { ...list[index], status };
   const next = list.map((item, i) => (i === index ? updated : item));
   persist(next);
+  globalRef.__vehicleCache__ = next;
+  return updated;
+}
+
+export function getVehicle(id: string): Vehicle | null {
+  return load().find((item) => item.id === id) ?? null;
+}
+
+/** Replaces a car's details. The id and page address (slug) stay the same, so shared links keep working. */
+export function updateVehicle(id: string, input: VehicleParsed): Vehicle | null {
+  const list = load();
+  const index = list.findIndex((item) => item.id === id);
+  if (index === -1) return null;
+  if (input.vin && list.some((item, i) => i !== index && item.vin && item.vin.toUpperCase() === input.vin.toUpperCase())) {
+    throw new VehicleError("A vehicle with that VIN / chassis number already exists.", 409);
+  }
+  const updated = buildVehicle(input, list[index].id, list[index].slug);
+  const next = list.map((item, i) => (i === index ? updated : item));
+  persist(next); // persist BEFORE updating the cache so a failed write isn't half-applied
   globalRef.__vehicleCache__ = next;
   return updated;
 }

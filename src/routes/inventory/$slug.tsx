@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SiteShell } from "@/components/layout/site-shell";
 import { VehicleGallery } from "@/components/vehicle-gallery";
 import { ContactButtons } from "@/components/contact-buttons";
+import { LoanOptions } from "@/components/loan-options";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { business } from "@/config/business";
@@ -106,6 +107,33 @@ function VehicleDetail() {
         </div>
       </section>
 
+      <LoanOptions
+        price={vehicle.price}
+        name={[vehicle.year, vehicle.name, vehicle.trim].filter(Boolean).join(" ")}
+      />
+
+      {vehicle.paymentInfo || vehicle.potentialUse ? (
+        <section className="mx-auto grid max-w-6xl gap-6 px-5 pb-10 md:grid-cols-2 lg:px-8">
+          {vehicle.paymentInfo ? (
+            <div className="rounded-2xl bg-surface p-6 shadow-card md:p-8">
+              <h2 className="font-serif text-2xl text-ink">{t("detail.paymentTitle")}</h2>
+              <p className="mt-4 text-sm leading-relaxed whitespace-pre-line text-muted">
+                {vehicle.paymentInfo}
+              </p>
+            </div>
+          ) : null}
+          {vehicle.potentialUse ? (
+            <div className="rounded-2xl bg-surface p-6 shadow-card md:p-8">
+              <h2 className="font-serif text-2xl text-ink">{t("detail.useTitle")}</h2>
+              <p className="mt-4 text-sm leading-relaxed whitespace-pre-line text-muted">
+                {vehicle.potentialUse}
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {vehicle.technical.length > 0 ? (
       <section className="mx-auto max-w-6xl px-5 pb-20 lg:px-8">
         <div className="rounded-2xl bg-surface p-6 shadow-card md:p-10">
           <h2 className="font-serif text-2xl text-ink md:text-3xl">{t("detail.techTitle")}</h2>
@@ -122,6 +150,7 @@ function VehicleDetail() {
           </dl>
         </div>
       </section>
+      ) : null}
     </SiteShell>
   );
 }

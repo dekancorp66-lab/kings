@@ -5,9 +5,11 @@ import {
   Inbox,
   LayoutDashboard,
   LogOut,
+  Pencil,
   Plus,
   Settings,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +22,7 @@ import {
   curatorMe,
   fetchAppointments,
   fetchInquiries,
+  fetchVehicleFull,
   patchAppointmentStatus,
   patchInquiryStatus,
   patchVehicleStatus,
@@ -48,6 +51,7 @@ function CuratorDesk() {
   // Live stock from the root loader. After any change we call router.invalidate() to refetch it.
   const vehicles = useVehicles();
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<Vehicle | null>(null);
   const [ready, setReady] = useState(false);
   const [pane, setPane] = useState<Pane>("dashboard");
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -96,6 +100,17 @@ function CuratorDesk() {
       await router.invalidate(); // refetch stock so the dashboard AND the public site update
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not update the status.");
+    }
+  }
+
+  async function startEdit(vehicle: PublicVehicle) {
+    try {
+      const full = await fetchVehicleFull(vehicle.id); // includes the VIN, which the public list hides
+      setAdding(false);
+      setEditing(full);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not open the vehicle.");
     }
   }
 
@@ -194,6 +209,18 @@ function CuratorDesk() {
         <main className="flex-1 overflow-auto p-5 lg:p-8">
           {pane === "dashboard" || pane === "inventory" ? (
             <>
+              {editing ? (
+                <AddVehicleForm
+                  key={editing.id}
+                  existing={vehicles}
+                  editing={editing}
+                  onCancel={() => setEditing(null)}
+                  onCreated={async () => {
+                    setEditing(null);
+                    await router.invalidate();
+                  }}
+                />
+              ) : null}
               {adding ? (
                 <AddVehicleForm
                   existing={vehicles}
@@ -217,9 +244,24 @@ function CuratorDesk() {
                   <h2 className="text-sm font-semibold">Vehicle inventory</h2>
                   <div className="flex items-center gap-3">
                     <Badge tone="muted">{vehicles.length} listed</Badge>
-                    <Button size="sm" onClick={() => setAdding(true)} disabled={adding}>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setEditing(null);
+                        setAdding(true);
+                      }}
+                      disabled={adding}
+                    >
                       <Plus className="size-4" />
                       Add vehicle
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.location.assign("/curator/quick-add")}
+                    >
+                      <Zap className="size-4" />
+                      Quick add
                     </Button>
                   </div>
                 </div>
@@ -279,6 +321,14 @@ function CuratorDesk() {
                             {formatKm(vehicle.mileage)}
                           </td>
                           <td className="px-5 py-3 text-right">
+                            <button
+                              type="button"
+                              aria-label={`Edit ${vehicle.name}`}
+                              className="inline-grid size-9 place-items-center rounded-md text-muted hover:bg-canvas hover:text-ink"
+                              onClick={() => void startEdit(vehicle)}
+                            >
+                              <Pencil className="size-4" />
+                            </button>
                             <button
                               type="button"
                               aria-label={`Delete ${vehicle.name}`}

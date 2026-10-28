@@ -4,7 +4,7 @@ import { getSiteOrigin } from "@/lib/site";
 import { ContactButtons } from "@/components/contact-buttons";
 import { business } from "@/config/business";
 import { SiteShell } from "@/components/layout/site-shell";
-import { SearchPanel } from "@/components/search-panel";
+import { inPriceRange, SearchPanel } from "@/components/search-panel";
 import { VehicleCard } from "@/components/vehicle-card";
 import { useVehicles } from "@/lib/vehicles";
 import { useI18n } from "@/lib/i18n";
@@ -12,6 +12,9 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/inventory/")({
   validateSearch: (search: Record<string, unknown>) => {
     const next: {
+      q?: string;
+      year?: string;
+      price?: string;
       make?: string;
       body?: string;
       fuel?: string;
@@ -19,6 +22,9 @@ export const Route = createFileRoute("/inventory/")({
       yearMin?: string;
       yearMax?: string;
     } = {};
+    if (typeof search.q === "string" && search.q.trim()) next.q = search.q.trim().slice(0, 80);
+    if (typeof search.year === "string" && search.year) next.year = search.year;
+    if (typeof search.price === "string" && search.price) next.price = search.price;
     if (typeof search.make === "string" && search.make) next.make = search.make;
     if (typeof search.body === "string" && search.body) next.body = search.body;
     if (typeof search.fuel === "string" && search.fuel) next.fuel = search.fuel;
@@ -45,12 +51,22 @@ function InventoryPage() {
   const vehicles = useVehicles();
   // True when the shop has no cars at all (not merely none matching the filters).
   const shopIsEmpty = vehicles.every((vehicle) => vehicle.status === "sold");
+  const words = (filters.q ?? "").toLowerCase().split(/\s+/).filter(Boolean);
   const list = vehicles.filter((vehicle) => {
     if (vehicle.status === "sold") return false;
     if (filters.make && vehicle.make !== filters.make) return false;
     if (filters.body && vehicle.body !== filters.body) return false;
     if (filters.fuel && vehicle.fuel !== filters.fuel) return false;
     if (filters.transmission && vehicle.transmission !== filters.transmission) return false;
+    if (filters.year && vehicle.year !== Number(filters.year)) return false;
+    if (filters.price && !inPriceRange(vehicle.price, filters.price)) return false;
+    if (words.length) {
+      // Every typed word must appear somewhere in the car's name, make, model, year, colour...
+      const text = [vehicle.name, vehicle.make, vehicle.model, vehicle.trim, vehicle.year, vehicle.body, vehicle.fuel,
+        vehicle.transmission, vehicle.drivetrain, vehicle.engine, vehicle.color]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!words.every((word) => text.includes(word))) return false;
+    }
     if (filters.yearMin && vehicle.year < Number(filters.yearMin)) return false;
     if (filters.yearMax && vehicle.year > Number(filters.yearMax)) return false;
     return true;

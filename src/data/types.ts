@@ -25,6 +25,8 @@ export type Vehicle = {
   badge?: "new" | "reserved";
   featured: boolean;
   description: string;
+  paymentInfo?: string;
+  potentialUse?: string;
   images: string[];
   /** Optional: which tab each photo belongs to (set in the admin). Untagged photos are guessed from the file name. */
   imageCategories?: PhotoCategoryMap;

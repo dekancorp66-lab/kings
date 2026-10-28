@@ -4,24 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import type { PublicVehicle, Vehicle } from "@/data/types";
 import { PhotoTile } from "@/components/curator/photo-tile";
-import { createVehicle, uploadVehiclePhoto } from "@/lib/api";
+import { createVehicle, updateVehicle, uploadVehiclePhoto } from "@/lib/api";
 import type { PhotoCategoryMap } from "@/lib/photo-categories";
 import { firstIssue, vehicleInputSchema } from "@/lib/vehicle-input";
 import { uniqueSorted } from "@/lib/vehicles";
+
+// "missing" = the Quick add reader did not find it; "guessed" = it filled a best guess, please check.
+export type FieldFlag = "missing" | "guessed";
+export type FieldFlags = Partial<Record<string, FieldFlag>>;
 
 type Props = {
   existing: PublicVehicle[]; // used to suggest spellings that already exist (keeps filters tidy)
   onCreated: (vehicle: Vehicle) => void;
   onCancel: () => void;
+  // Optional, used by Quick add to pre-fill the form. The normal "Add a vehicle" button passes none of these.
+  initial?: Partial<Record<string, string>>;
+  initialImages?: string[];
+  initialFlags?: FieldFlags;
+  // Set when editing a car that is already in the inventory.
+  editing?: Vehicle;
 };
 
-export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
-  const [images, setImages] = useState<string[]>([]);
+export function AddVehicleForm({ existing, onCreated, onCancel, initial, initialImages, initialFlags, editing }: Props) {
+  const [images, setImages] = useState<string[]>(initialImages ?? editing?.images ?? []);
   // What each photo shows (Exterior / Interior / Engine / Wheels). Missing = Exterior.
-  const [categories, setCategories] = useState<PhotoCategoryMap>({});
+  const [categories, setCategories] = useState<PhotoCategoryMap>(editing?.imageCategories ?? {});
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [flags, setFlags] = useState<FieldFlags>(initialFlags ?? {});
   const fileInput = useRef<HTMLInputElement>(null);
+
+  const start = editing ? vehicleToInitial(editing) : initial;
+  const v = (key: string) => start?.[key];
+
+  // Typing in a highlighted field clears its highlight.
+  function clearFlag(event: React.FormEvent<HTMLFormElement>) {
+    const name = (event.target as HTMLInputElement).name;
+    if (name && flags[name]) setFlags(({ [name]: _cleared, ...rest }) => rest);
+  }
 
   // <datalist> suggestions: typing "SU" offers the existing "SUV", so "Suv"/"suv" variants
   // don't create duplicate entries in the public search filters.
@@ -63,15 +83,22 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
       engine: str("engine"),
       color: str("color"),
       interiorColor: str("interiorColor"),
-      vin: str("vin"),
+      vin: editing?.vin ?? "",
       status: str("status"),
       badge: badge === "new" || badge === "reserved" ? badge : undefined,
       featured: data.get("featured") === "on",
       description: str("description"),
-      horsepower: str("horsepower"),
-      torque: str("torque"),
-      zeroToSixty: str("zeroToSixty"),
-      topSpeed: str("topSpeed"),
+      paymentInfo: str("paymentInfo"),
+      potentialUse: str("potentialUse"),
+      // Cars saved before the Technical details box was removed keep their old values when edited.
+      ...(editing
+        ? {
+            horsepower: techValue(editing, "Horsepower"),
+            torque: techValue(editing, "Torque"),
+            zeroToSixty: techValue(editing, "0–100 km/h"),
+            topSpeed: techValue(editing, "Top Speed"),
+          }
+        : {}),
       images,
       imageCategories: categories,
     });
@@ -82,20 +109,32 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
 
     setSaving(true);
     try {
-      const vehicle = await createVehicle(parsed.data);
-      toast.success(`${vehicle.year} ${vehicle.name} added to the inventory.`);
+      const vehicle = editing
+        ? await updateVehicle(editing.id, parsed.data)
+        : await createVehicle(parsed.data);
+      toast.success(
+        editing
+          ? `${vehicle.year} ${vehicle.name} saved.`
+          : `${vehicle.year} ${vehicle.name} added to the inventory.`,
+      );
       onCreated(vehicle);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not add the vehicle.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : editing
+            ? "Could not save the changes."
+            : "Could not add the vehicle.",
+      );
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-8 rounded-2xl bg-surface p-6 shadow-card md:p-8">
+    <form onSubmit={onSubmit} onInput={clearFlag} className="mt-8 rounded-2xl bg-surface p-6 shadow-card md:p-8">
       <div className="flex items-center justify-between">
-        <h2 className="font-serif text-2xl text-ink">Add a vehicle</h2>
+        <h2 className="font-serif text-2xl text-ink">{editing ? "Edit vehicle" : "Add a vehicle"}</h2>
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
           Cancel
         </Button>
@@ -144,58 +183,58 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
       </fieldset>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Make *"><Input name="make" list="dl-make" required maxLength={60} placeholder="Toyota" /></Field>
-        <Field label="Model *"><Input name="model" required maxLength={60} placeholder="Land Cruiser" /></Field>
-        <Field label="Trim / variant"><Input name="trim" maxLength={60} placeholder="V8 ZX" /></Field>
-        <Field label="Year *"><Input name="year" type="number" required min={1950} max={new Date().getFullYear() + 1} placeholder="2023" /></Field>
-        <Field label="Price (TZS) *"><Input name="price" type="number" required min={1} step="any" placeholder="45000000" /></Field>
-        <Field label="Mileage (km) *"><Input name="mileage" type="number" required min={0} placeholder="80000" /></Field>
-        <Field label="Body type *"><Input name="body" list="dl-body" required maxLength={40} placeholder="SUV" /></Field>
-        <Field label="Fuel *"><Input name="fuel" list="dl-fuel" required maxLength={40} placeholder="Diesel" /></Field>
-        <Field label="Transmission *"><Input name="transmission" list="dl-trans" required maxLength={60} placeholder="Automatic" /></Field>
-        <Field label="Drivetrain"><Input name="drivetrain" maxLength={60} placeholder="4WD" /></Field>
-        <Field label="Engine"><Input name="engine" maxLength={80} placeholder="3.3L V6 Twin-Turbo" /></Field>
-        <Field label="VIN / chassis no. *"><Input name="vin" required maxLength={20} placeholder="JTMXXXXXXXXXXXXXX" className="uppercase" /></Field>
-        <Field label="Exterior colour *"><Input name="color" required maxLength={60} placeholder="Pearl White" /></Field>
-        <Field label="Interior colour"><Input name="interiorColor" maxLength={60} placeholder="Black leather" /></Field>
+        <Field label="Make *" flag={flags.make}><Input name="make" list="dl-make" required maxLength={60} placeholder="Toyota" defaultValue={v("make")} /></Field>
+        <Field label="Model *" flag={flags.model}><Input name="model" required maxLength={60} placeholder="Land Cruiser" defaultValue={v("model")} /></Field>
+        <Field label="Trim / variant" flag={flags.trim}><Input name="trim" maxLength={60} placeholder="V8 ZX" defaultValue={v("trim")} /></Field>
+        <Field label="Year *" flag={flags.year}><Input name="year" type="number" required min={1950} max={new Date().getFullYear() + 1} placeholder="2023" defaultValue={v("year")} /></Field>
+        <Field label="Price (TZS) *" flag={flags.price}><Input name="price" type="number" required min={1} step="any" placeholder="45000000" defaultValue={v("price")} /></Field>
+        <Field label="Mileage (km) *" flag={flags.mileage}><Input name="mileage" type="number" required min={0} placeholder="80000" defaultValue={v("mileage")} /></Field>
+        <Field label="Body type *" flag={flags.body}><Input name="body" list="dl-body" required maxLength={40} placeholder="SUV" defaultValue={v("body")} /></Field>
+        <Field label="Fuel *" flag={flags.fuel}><Input name="fuel" list="dl-fuel" required maxLength={40} placeholder="Diesel" defaultValue={v("fuel")} /></Field>
+        <Field label="Transmission *" flag={flags.transmission}><Input name="transmission" list="dl-trans" required maxLength={60} placeholder="Automatic" defaultValue={v("transmission")} /></Field>
+        <Field label="Drivetrain" flag={flags.drivetrain}><Input name="drivetrain" maxLength={60} placeholder="4WD" defaultValue={v("drivetrain")} /></Field>
+        <Field label="Engine" flag={flags.engine}><Input name="engine" maxLength={80} placeholder="3.3L V6 Twin-Turbo" defaultValue={v("engine")} /></Field>
+        <Field label="Exterior colour *" flag={flags.color}><Input name="color" required maxLength={60} placeholder="Pearl White" defaultValue={v("color")} /></Field>
+        <Field label="Interior colour" flag={flags.interiorColor}><Input name="interiorColor" maxLength={60} placeholder="Black leather" defaultValue={v("interiorColor")} /></Field>
         <Field label="Status *">
-          <Select name="status" defaultValue="available">
+          <Select name="status" defaultValue={editing?.status ?? "available"}>
             <option value="available">Available</option>
             <option value="pending">Pending</option>
             <option value="sold">Sold</option>
           </Select>
         </Field>
         <Field label="Badge">
-          <Select name="badge" defaultValue="">
+          <Select name="badge" defaultValue={editing?.badge ?? ""}>
             <option value="">None</option>
             <option value="new">New arrival</option>
             <option value="reserved">Reserved</option>
           </Select>
         </Field>
         <label className="flex items-end gap-2 pb-3 text-sm text-ink">
-          <input type="checkbox" name="featured" className="size-4 accent-[var(--color-accent)]" />
+          <input type="checkbox" name="featured" defaultChecked={editing?.featured} className="size-4 accent-[var(--color-accent)]" />
           Show on the homepage (featured)
         </label>
       </div>
 
-      <div className="mt-4">
+      <div className={`mt-4 ${flagClass(flags.description)}`}>
         <Label htmlFor="description">Description *</Label>
-        <Textarea id="description" name="description" required maxLength={3000} placeholder="Condition, history, standout features…" />
+        <Textarea id="description" name="description" required maxLength={3000} placeholder="Condition, history, standout features…" defaultValue={v("description")} />
+        <FlagHint flag={flags.description} />
       </div>
 
-      <fieldset className="mt-6">
-        <legend className="text-micro font-semibold tracking-mark text-muted uppercase">Technical details (optional)</legend>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Field label="Horsepower"><Input name="horsepower" maxLength={40} placeholder="304 hp" /></Field>
-          <Field label="Torque"><Input name="torque" maxLength={40} placeholder="700 Nm" /></Field>
-          <Field label="0–100 km/h"><Input name="zeroToSixty" maxLength={40} placeholder="6.7 seconds" /></Field>
-          <Field label="Top speed"><Input name="topSpeed" maxLength={40} placeholder="220 km/h" /></Field>
-        </div>
-      </fieldset>
+      <div className="mt-4">
+        <Label htmlFor="paymentInfo">Payment details (optional)</Label>
+        <Textarea id="paymentInfo" name="paymentInfo" maxLength={2000} placeholder="Cash, bank transfer, instalment plan, deposit needed, trade-in accepted…" defaultValue={v("paymentInfo")} />
+      </div>
+
+      <div className="mt-4">
+        <Label htmlFor="potentialUse">Potential use (optional)</Label>
+        <Textarea id="potentialUse" name="potentialUse" maxLength={2000} placeholder="Family car, safari trips, farm work, taxi or business use…" defaultValue={v("potentialUse")} />
+      </div>
 
       <div className="mt-8 flex gap-3">
         <Button type="submit" disabled={saving || uploading}>
-          {saving ? "Saving…" : "Add to inventory"}
+          {saving ? "Saving…" : editing ? "Save changes" : "Add to inventory"}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
@@ -205,12 +244,52 @@ export function AddVehicleForm({ existing, onCreated, onCancel }: Props) {
   );
 }
 
+// Turns a saved car back into the text values the form boxes expect.
+function vehicleToInitial(car: Vehicle): Record<string, string> {
+  return {
+    make: car.make,
+    model: car.model,
+    trim: car.trim ?? "",
+    year: String(car.year),
+    price: String(car.price),
+    mileage: String(car.mileage),
+    body: car.body,
+    fuel: car.fuel,
+    transmission: car.transmission,
+    drivetrain: car.drivetrain ?? "",
+    engine: car.engine ?? "",
+    color: car.color,
+    interiorColor: car.specs.find((row) => row.label === "Interior Color")?.value ?? "",
+    vin: car.vin,
+    description: car.description,
+    paymentInfo: car.paymentInfo ?? "",
+    potentialUse: car.potentialUse ?? "",
+  };
+}
+
+function techValue(car: Vehicle, label: string) {
+  return car.technical.find((row) => row.label === label)?.value ?? "";
+}
+
+function flagClass(flag?: FieldFlag) {
+  if (flag === "missing") return "rounded-lg bg-amber-50 p-2 ring-2 ring-amber-400";
+  if (flag === "guessed") return "rounded-lg bg-sky-50 p-2 ring-2 ring-sky-300";
+  return "";
+}
+
+function FlagHint({ flag }: { flag?: FieldFlag }) {
+  if (flag === "missing") return <span className="mt-1 block text-[11px] text-amber-700">Not found in the caption, please fill in</span>;
+  if (flag === "guessed") return <span className="mt-1 block text-[11px] text-sky-700">Best guess, please check</span>;
+  return null;
+}
+
 // A wrapping <label> ties the text to its input for screen readers and makes the label clickable.
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, flag, children }: { label: string; flag?: FieldFlag; children: React.ReactNode }) {
   return (
-    <label className="block">
+    <label className={`block ${flagClass(flag)}`}>
       <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted">{label}</span>
       {children}
+      <FlagHint flag={flag} />
     </label>
   );
 }

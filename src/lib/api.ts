@@ -5,7 +5,7 @@ import type { VehicleInput } from "@/lib/vehicle-input";
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
-  if (init.body && !headers.has("Content-Type")) {
+  if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   const response = await fetch(path, { ...init, headers, credentials: "same-origin" });
@@ -146,6 +146,19 @@ export async function createVehicle(input: VehicleInput) {
 
 export async function patchVehicleStatus(id: string, status: Vehicle["status"]) {
   return request(`/api/vehicles/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+}
+
+export async function fetchVehicleFull(id: string) {
+  const data = await request<{ vehicle: Vehicle }>(`/api/vehicles/${id}`);
+  return data.vehicle;
+}
+
+export async function updateVehicle(id: string, input: VehicleInput) {
+  const data = await request<{ vehicle: Vehicle }>(`/api/vehicles/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return data.vehicle;
 }
 
 export async function removeVehicle(id: string) {

@@ -2,14 +2,13 @@ import { HeroReel } from "@/components/hero-reel";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { businessJsonLd, pageHead } from "@/lib/seo";
 import { getSiteOrigin } from "@/lib/site";
-import { Clock, Headphones, MapPin, Phone, Scale, ShieldCheck, Sparkles } from "lucide-react";
+import { Headphones, Scale, ShieldCheck, Sparkles } from "lucide-react";
 import { EnquiryForm } from "@/components/enquiry-form";
 import { SiteShell } from "@/components/layout/site-shell";
 import { SearchPanel } from "@/components/search-panel";
 import { Button } from "@/components/ui/button";
 import { VehicleCard } from "@/components/vehicle-card";
-import { ContactButtons } from "@/components/contact-buttons";
-import { TanzaniaMap } from "@/components/tanzania-map";
+import { GlobeMap } from "@/components/globe-map";
 import { business } from "@/config/business";
 import { standards } from "@/data/catalog";
 import { useVehicles } from "@/lib/vehicles";
@@ -121,53 +120,8 @@ function Home() {
         </div>
       </section>
 
-      <section className="bg-surface py-20">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 lg:grid-cols-2 lg:px-8">
-          <div>
-            <p className="text-micro font-semibold tracking-mark text-accent uppercase">
-              {t("home.findEyebrow")}
-            </p>
-            <h2 className="mt-2 font-serif text-3xl text-ink md:text-4xl">
-              {t("home.findTitle")}
-            </h2>
-            <ul className="mt-8 space-y-5 text-sm">
-              <li className="flex gap-3">
-                <MapPin className="mt-0.5 size-5 text-accent" />
-                <div>
-                  <p className="font-semibold text-ink">{t("home.address")}</p>
-                  {business.address.map((line) => (
-                    <p key={line} className="text-muted">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <Phone className="mt-0.5 size-5 text-accent" />
-                <div>
-                  <p className="font-semibold text-ink">{t("home.phone")}</p>
-                  {business.phones.map((phone) => (
-                    <p key={phone.intl} className="text-muted">
-                      {phone.display}
-                    </p>
-                  ))}
-                  <p className="text-muted">{business.email}</p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <Clock className="mt-0.5 size-5 text-accent" />
-                <div>
-                  <p className="font-semibold text-ink">{t("home.hours")}</p>
-                  <p className="text-muted">{t("biz.hours1")}</p>
-                  <p className="text-muted">{t("biz.hours2")}</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div className="flex flex-col justify-center">
-            <TanzaniaMap />
-          </div>
-        </div>
+      <section aria-label="Our branches" className="bg-canvas">
+        <GlobeMap bleed />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-20 lg:px-8">

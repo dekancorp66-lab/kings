@@ -48,11 +48,15 @@ export const vehicleInputSchema = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z0-9-]{5,20}$/, "VIN / chassis number must be 5–20 letters or digits"),
+    .refine((value) => value === "" || /^[A-Z0-9-]{5,20}$/.test(value), "VIN / chassis number must be 5–20 letters or digits")
+    .optional()
+    .default(""),
   status: z.enum(VEHICLE_STATUSES, { error: "Status must be available, pending or sold" }),
   badge: z.enum(["new", "reserved"]).optional(),
   featured: z.boolean().default(false),
   description: text("Description", 3000),
+  paymentInfo: optionalText(2000),
+  potentialUse: optionalText(2000),
   // Optional technical extras, shown in the "technical" table on the detail page.
   horsepower: optionalText(40),
   torque: optionalText(40),
@@ -141,6 +145,8 @@ export function buildVehicle(input: VehicleParsed, id: string, slug: string): Ve
     ...(input.badge ? { badge: input.badge } : {}),
     featured: input.featured,
     description: input.description,
+    ...(input.paymentInfo ? { paymentInfo: input.paymentInfo } : {}),
+    ...(input.potentialUse ? { potentialUse: input.potentialUse } : {}),
     images: input.images,
     // Keep only tags for photos that are really on the car (a removed photo's tag is dropped).
     ...(taggedPhotos(input) ? { imageCategories: taggedPhotos(input) } : {}),

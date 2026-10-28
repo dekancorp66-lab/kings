@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FinancingRouteImport } from './routes/financing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ServicesRouteImport } from './routes/services'
@@ -27,6 +28,7 @@ import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as ApiVehiclesRouteImport } from './routes/api/vehicles'
 import { Route as CuratorIndexRouteImport } from './routes/curator/index'
 import { Route as CuratorLoginRouteImport } from './routes/curator/login'
+import { Route as CuratorQuickAddRouteImport } from './routes/curator/quick-add'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as InventorySlugRouteImport } from './routes/inventory/$slug'
 import { Route as ApiAppointmentsIdRouteImport } from './routes/api/appointments.$id'
@@ -47,6 +49,11 @@ const AboutRoute = AboutRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinancingRoute = FinancingRouteImport.update({
+  id: '/financing',
+  path: '/financing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -124,6 +131,11 @@ const CuratorLoginRoute = CuratorLoginRouteImport.update({
   path: '/curator/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CuratorQuickAddRoute = CuratorQuickAddRouteImport.update({
+  id: '/curator/quick-add',
+  path: '/curator/quick-add',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InventoryIndexRoute = InventoryIndexRouteImport.update({
   id: '/inventory/',
   path: '/inventory/',
@@ -159,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/financing': typeof FinancingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
@@ -173,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vehicles': typeof ApiVehiclesRouteWithChildren
   '/curator/login': typeof CuratorLoginRoute
+  '/curator/quick-add': typeof CuratorQuickAddRoute
   '/inventory/$slug': typeof InventorySlugRoute
   '/curator/': typeof CuratorIndexRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -185,6 +199,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/financing': typeof FinancingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
@@ -199,6 +214,7 @@ export interface FileRoutesByTo {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vehicles': typeof ApiVehiclesRouteWithChildren
   '/curator/login': typeof CuratorLoginRoute
+  '/curator/quick-add': typeof CuratorQuickAddRoute
   '/inventory/$slug': typeof InventorySlugRoute
   '/curator': typeof CuratorIndexRoute
   '/inventory': typeof InventoryIndexRoute
@@ -212,6 +228,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
+  '/financing': typeof FinancingRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/services': typeof ServicesRoute
@@ -226,6 +243,7 @@ export interface FileRoutesById {
   '/api/uploads': typeof ApiUploadsRouteWithChildren
   '/api/vehicles': typeof ApiVehiclesRouteWithChildren
   '/curator/login': typeof CuratorLoginRoute
+  '/curator/quick-add': typeof CuratorQuickAddRoute
   '/inventory/$slug': typeof InventorySlugRoute
   '/curator/': typeof CuratorIndexRoute
   '/inventory/': typeof InventoryIndexRoute
@@ -240,6 +258,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/financing'
     | '/privacy'
     | '/robots.txt'
     | '/services'
@@ -254,6 +273,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vehicles'
     | '/curator/login'
+    | '/curator/quick-add'
     | '/inventory/$slug'
     | '/curator/'
     | '/inventory/'
@@ -266,6 +286,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/financing'
     | '/privacy'
     | '/robots.txt'
     | '/services'
@@ -280,6 +301,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vehicles'
     | '/curator/login'
+    | '/curator/quick-add'
     | '/inventory/$slug'
     | '/curator'
     | '/inventory'
@@ -292,6 +314,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/contact'
+    | '/financing'
     | '/privacy'
     | '/robots.txt'
     | '/services'
@@ -306,6 +329,7 @@ export interface FileRouteTypes {
     | '/api/uploads'
     | '/api/vehicles'
     | '/curator/login'
+    | '/curator/quick-add'
     | '/inventory/$slug'
     | '/curator/'
     | '/inventory/'
@@ -319,6 +343,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
+  FinancingRoute: typeof FinancingRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   ServicesRoute: typeof ServicesRoute
@@ -333,6 +358,7 @@ export interface RootRouteChildren {
   ApiUploadsRoute: typeof ApiUploadsRouteWithChildren
   ApiVehiclesRoute: typeof ApiVehiclesRouteWithChildren
   CuratorLoginRoute: typeof CuratorLoginRoute
+  CuratorQuickAddRoute: typeof CuratorQuickAddRoute
   InventorySlugRoute: typeof InventorySlugRoute
   CuratorIndexRoute: typeof CuratorIndexRoute
   InventoryIndexRoute: typeof InventoryIndexRoute
@@ -359,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financing': {
+      id: '/financing'
+      path: '/financing'
+      fullPath: '/financing'
+      preLoaderRoute: typeof FinancingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -466,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CuratorLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/curator/quick-add': {
+      id: '/curator/quick-add'
+      path: '/curator/quick-add'
+      fullPath: '/curator/quick-add'
+      preLoaderRoute: typeof CuratorQuickAddRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventory/': {
       id: '/inventory/'
       path: '/inventory'
@@ -563,6 +603,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
+  FinancingRoute: FinancingRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   ServicesRoute: ServicesRoute,
@@ -577,6 +618,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadsRoute: ApiUploadsRouteWithChildren,
   ApiVehiclesRoute: ApiVehiclesRouteWithChildren,
   CuratorLoginRoute: CuratorLoginRoute,
+  CuratorQuickAddRoute: CuratorQuickAddRoute,
   InventorySlugRoute: InventorySlugRoute,
   CuratorIndexRoute: CuratorIndexRoute,
   InventoryIndexRoute: InventoryIndexRoute,
